@@ -3,6 +3,7 @@
 .output/
 .data/
 dist/
+.netlify/
 
 # Node
 node_modules/
