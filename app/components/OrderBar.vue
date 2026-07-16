@@ -18,7 +18,7 @@ const { totalItems, formattedTotal, whatsappUrl } = useOrder()
           <span class="block text-[0.65rem] uppercase tracking-widest opacity-80">
             {{ totalItems }} {{ totalItems === 1 ? 'ítem' : 'ítems' }}
           </span>
-          <span class="font-display text-lg">{{ formattedTotal }}</span>
+          <span class="font-display text-xl text-gold">{{ formattedTotal }}</span>
         </span>
         <span class="flex items-center gap-2 font-display text-sm tracking-wide">
           <Icon name="ic:baseline-whatsapp" class="size-5" />
