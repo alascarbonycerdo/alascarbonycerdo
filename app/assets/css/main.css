@@ -1,0 +1,24 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-display: "Bungee Inline", system-ui, sans-serif;
+  --font-sans: "Oswald", system-ui, sans-serif;
+
+  --color-ink: #171210;
+  --color-ink-soft: #241b16;
+  --color-gold: #f4c430;
+  --color-gold-soft: #f9db6d;
+  --color-ember: #dc2626;
+  --color-ember-soft: #ef4444;
+}
+
+html {
+  background-color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-gold-soft);
+  -webkit-font-smoothing: antialiased;
+}
