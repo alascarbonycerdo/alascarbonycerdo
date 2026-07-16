@@ -1,0 +1,78 @@
+import type { DaySummary, InventoryItem, SaleRecord } from '#shared/types/dashboard'
+
+export const useDashboard = () => {
+  const inventory = useState<InventoryItem[]>('dashboard-inventory', () => [])
+  const todaySales = useState<SaleRecord[]>('dashboard-today-sales', () => [])
+  const weeklySummary = useState<DaySummary[]>('dashboard-weekly-summary', () => [])
+  const pending = useState('dashboard-pending', () => false)
+  const error = useState<string | null>('dashboard-error', () => null)
+
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date())
+
+  const refresh = async () => {
+    pending.value = true
+    error.value = null
+    try {
+      const [inventoryRes, salesRes, summaryRes] = await Promise.all([
+        $fetch<InventoryItem[]>('/api/dashboard/inventory'),
+        $fetch<SaleRecord[]>('/api/dashboard/sales', { query: { date: today } }),
+        $fetch<DaySummary[]>('/api/dashboard/summary', { query: { days: 7 } }),
+      ])
+      inventory.value = inventoryRes
+      todaySales.value = salesRes
+      weeklySummary.value = summaryRes
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'No se pudo cargar el dashboard'
+    } finally {
+      pending.value = false
+    }
+    return true
+  }
+
+  const registerSale = async (dishId: string, qty: number) => {
+    await $fetch('/api/dashboard/sales', { method: 'POST', body: { dishId, qty } })
+    await refresh()
+  }
+
+  const addStock = async (dishId: string, amount: number, note?: string) => {
+    await $fetch(`/api/dashboard/inventory/${dishId}/restock`, {
+      method: 'POST',
+      body: { amount, note },
+    })
+    await refresh()
+  }
+
+  const setConsumption = async (dishId: string, consumptionPerSale: number) => {
+    await $fetch(`/api/dashboard/inventory/${dishId}`, {
+      method: 'PATCH',
+      body: { consumptionPerSale },
+    })
+    await refresh()
+  }
+
+  const todayRevenueThousands = computed(() =>
+    todaySales.value.reduce((sum, sale) => sum + sale.totalThousands, 0),
+  )
+
+  const todayItemsSold = computed(() => todaySales.value.reduce((sum, sale) => sum + sale.qty, 0))
+
+  const lowStockCount = computed(
+    () => inventory.value.filter((item) => item.currentStock < item.consumptionPerSale).length,
+  )
+
+  return {
+    inventory,
+    todaySales,
+    weeklySummary,
+    pending,
+    error,
+    today,
+    refresh,
+    registerSale,
+    addStock,
+    setConsumption,
+    todayRevenueThousands,
+    todayItemsSold,
+    lowStockCount,
+  }
+}
