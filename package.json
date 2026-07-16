@@ -22,5 +22,8 @@
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.7"
   },
-  "packageManager": "pnpm@10.0.0"
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "@parcel/watcher", "vue-demi"]
+  }
 }
