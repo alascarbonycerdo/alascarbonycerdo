@@ -12,10 +12,10 @@
       </header>
 
       <div class="mt-8 flex items-center gap-4">
-        <DeliveryQr />
+        <DirectionsButton />
         <div>
 
-          <p class="flex-1 text-sm leading-snug text-gold-soft/80">
+          <p class="flex-1 text-md ading-snug text-gold-soft/80">
             Pide tus alas y cerdo al barril para recoger o a domicilio. Elige tus favoritos y
             confirma por WhatsApp.
           </p>

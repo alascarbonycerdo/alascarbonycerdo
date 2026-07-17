@@ -14,7 +14,7 @@ const emit = defineEmits<{ increment: []; decrement: [] }>()
     >
       <Icon name="lucide:minus" class="size-4" />
     </button>
-    <span class="w-4 text-center font-display text-sm text-gold">{{ qty }}</span>
+    <span class="w-4 text-center font-display text-xl text-gold">{{ qty }}</span>
     <button
       type="button"
       class="flex size-8 items-center justify-center rounded-full text-gold transition hover:bg-gold/10"
