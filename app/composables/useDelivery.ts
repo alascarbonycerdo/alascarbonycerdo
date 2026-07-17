@@ -3,7 +3,10 @@ interface Coords {
   lng: number
 }
 
+export type FulfillmentMethod = 'pickup' | 'delivery'
+
 export const useDelivery = () => {
+  const method = useState<FulfillmentMethod | null>('delivery-method', () => null)
   const address = useState('delivery-address', () => '')
   const apartment = useState('delivery-apartment', () => '')
   const coords = useState<Coords | null>('delivery-coords', () => null)
@@ -11,6 +14,14 @@ export const useDelivery = () => {
   const locateError = useState<string | null>('delivery-locate-error', () => null)
 
   const hasAddress = computed(() => address.value.trim().length > 0)
+
+  const isReady = computed(() => method.value === 'pickup' || (method.value === 'delivery' && hasAddress.value))
+
+  const checkoutHint = computed(() => {
+    if (!method.value) return 'Elige recoger o domicilio'
+    if (method.value === 'delivery' && !hasAddress.value) return 'Agrega tu dirección'
+    return ''
+  })
 
   const mapsUrl = computed(() =>
     coords.value ? `https://www.google.com/maps?q=${coords.value.lat},${coords.value.lng}` : null,
@@ -56,24 +67,32 @@ export const useDelivery = () => {
     )
   }
 
-  const addressMessage = computed(() => {
-    if (!hasAddress.value) return ''
-    const lines = [`- ${address.value.trim()}`]
-    if (apartment.value.trim()) lines.push(`- ${apartment.value.trim()}`)
-    if (mapsUrl.value) lines.push(`- Ubicación: ${mapsUrl.value}`)
-    return `\n\nDirección de entrega:\n${lines.join('\n')}`
+  const fulfillmentMessage = computed(() => {
+    if (method.value === 'pickup') return '\n\nEntrega: recoger en el local.'
+
+    if (method.value === 'delivery' && hasAddress.value) {
+      const lines = [`- ${address.value.trim()}`]
+      if (apartment.value.trim()) lines.push(`- ${apartment.value.trim()}`)
+      if (mapsUrl.value) lines.push(`- Ubicación: ${mapsUrl.value}`)
+      return `\n\nDirección de entrega:\n${lines.join('\n')}`
+    }
+
+    return ''
   })
 
   return {
+    method,
     address,
     apartment,
     coords,
     locating,
     locateError,
     hasAddress,
+    isReady,
+    checkoutHint,
     mapsUrl,
     setCoords,
     locateMe,
-    addressMessage,
+    fulfillmentMessage,
   }
 }

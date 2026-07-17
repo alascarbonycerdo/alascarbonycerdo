@@ -64,6 +64,15 @@ onMounted(async () => {
   })
 })
 
+watch(
+  () => delivery.method.value,
+  async (method) => {
+    if (method !== 'delivery') return
+    await nextTick()
+    map?.invalidateSize()
+  },
+)
+
 onBeforeUnmount(() => {
   map?.remove()
   map = null
@@ -79,49 +88,87 @@ onBeforeUnmount(() => {
       <span class="h-px flex-1 bg-ember/50" />
     </div>
 
-    <button
-      type="button"
-      class="flex w-full items-center justify-center gap-2 rounded-xl bg-ink-soft py-2.5 text-sm font-semibold text-gold ring-1 ring-gold/20 transition hover:bg-ink-soft/70 disabled:opacity-60"
-      :disabled="delivery.locating.value"
-      @click="delivery.locateMe()"
-    >
-      <Icon name="lucide:locate-fixed" class="size-4" />
-      {{ delivery.locating.value ? 'Buscando tu ubicación…' : 'Usar mi ubicación' }}
-    </button>
-
-    <p v-if="delivery.locateError.value" class="text-xs text-ember-soft">
-      {{ delivery.locateError.value }}
-    </p>
-
-    <div ref="mapContainer" class="h-56 w-full overflow-hidden rounded-2xl ring-1 ring-gold/15" />
-    <p class="text-xs text-gold-soft/60">
-      Toca el mapa o arrastra el pin para ajustar el punto exacto de entrega.
-    </p>
-
-    <div class="space-y-1">
-      <label class="flex items-center gap-1 text-xs uppercase tracking-widest text-gold-soft/70">
-        Dirección
-        <span class="text-ember">*</span>
-      </label>
-      <textarea
-        v-model="delivery.address.value"
-        rows="2"
-        required
-        placeholder="Calle, número, barrio"
-        class="w-full resize-none rounded-xl bg-ink-soft px-3 py-2 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
-      />
+    <div class="grid grid-cols-2 gap-3">
+      <button
+        type="button"
+        class="flex flex-col items-center gap-1 rounded-xl px-4 py-3 font-display text-sm tracking-wide ring-1 transition"
+        :class="
+          delivery.method.value === 'pickup'
+            ? 'bg-gold text-ink ring-gold'
+            : 'bg-ink-soft text-gold-soft ring-gold/15 hover:ring-gold/30'
+        "
+        @click="delivery.method.value = 'pickup'"
+      >
+        <Icon name="lucide:store" class="size-5" />
+        Recoger
+      </button>
+      <button
+        type="button"
+        class="flex flex-col items-center gap-1 rounded-xl px-4 py-3 font-display text-sm tracking-wide ring-1 transition"
+        :class="
+          delivery.method.value === 'delivery'
+            ? 'bg-gold text-ink ring-gold'
+            : 'bg-ink-soft text-gold-soft ring-gold/15 hover:ring-gold/30'
+        "
+        @click="delivery.method.value = 'delivery'"
+      >
+        <Icon name="lucide:bike" class="size-5" />
+        A domicilio
+      </button>
     </div>
 
-    <div class="space-y-1">
-      <label class="text-xs uppercase tracking-widest text-gold-soft/70">
-        Apartamento o indicación (opcional)
-      </label>
-      <input
-        v-model="delivery.apartment.value"
-        type="text"
-        placeholder="Torre 2, apto 402, portería azul…"
-        class="w-full rounded-xl bg-ink-soft px-3 py-2 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+    <p
+      v-if="delivery.method.value === 'pickup'"
+      class="rounded-xl bg-ink-soft/60 px-4 py-3 text-sm text-gold-soft/80 ring-1 ring-gold/10"
+    >
+      Perfecto — pasas a recogerlo al local. Te confirmamos la dirección y el tiempo por WhatsApp.
+    </p>
+
+    <div v-show="delivery.method.value === 'delivery'" class="space-y-3">
+      <button
+        type="button"
+        class="flex w-full items-center justify-center gap-2 rounded-xl bg-ink-soft py-2.5 text-sm font-semibold text-gold ring-1 ring-gold/20 transition hover:bg-ink-soft/70 disabled:opacity-60"
+        :disabled="delivery.locating.value"
+        @click="delivery.locateMe()"
       >
+        <Icon name="lucide:locate-fixed" class="size-4" />
+        {{ delivery.locating.value ? 'Buscando tu ubicación…' : 'Usar mi ubicación' }}
+      </button>
+
+      <p v-if="delivery.locateError.value" class="text-xs text-ember-soft">
+        {{ delivery.locateError.value }}
+      </p>
+
+      <div ref="mapContainer" class="h-56 w-full overflow-hidden rounded-2xl ring-1 ring-gold/15" />
+      <p class="text-xs text-gold-soft/60">
+        Toca el mapa o arrastra el pin para ajustar el punto exacto de entrega.
+      </p>
+
+      <div class="space-y-1">
+        <label class="flex items-center gap-1 text-xs uppercase tracking-widest text-gold-soft/70">
+          Dirección
+          <span class="text-ember">*</span>
+        </label>
+        <textarea
+          v-model="delivery.address.value"
+          rows="2"
+          required
+          placeholder="Calle, número, barrio"
+          class="w-full resize-none rounded-xl bg-ink-soft px-3 py-2 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+        />
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs uppercase tracking-widest text-gold-soft/70">
+          Apartamento o indicación (opcional)
+        </label>
+        <input
+          v-model="delivery.apartment.value"
+          type="text"
+          placeholder="Torre 2, apto 402, portería azul…"
+          class="w-full rounded-xl bg-ink-soft px-3 py-2 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+        >
+      </div>
     </div>
   </section>
 </template>

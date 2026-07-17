@@ -23,4 +23,5 @@ export const contact = {
   whatsappDisplay: '305 220 2396',
   instagram: 'alascarbonycerdo',
   facebook: 'alascarbonycerdo',
+  facebookURL: 'profile.php?id=61590691526649',
 }
