@@ -40,8 +40,8 @@ export const useOrder = () => {
       })
       .join('\n')
 
-    const { addressMessage } = useDelivery()
-    const message = `Hola! Quiero pedir:\n${body}\n\nTotal: ${formattedTotal.value}${addressMessage.value}`
+    const { fulfillmentMessage } = useDelivery()
+    const message = `Hola! Quiero pedir:\n${body}\n\nTotal: ${formattedTotal.value}${fulfillmentMessage.value}`
     return `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`
   })
 

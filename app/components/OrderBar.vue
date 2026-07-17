@@ -2,14 +2,14 @@
 import { contact } from '#shared/utils/menu'
 
 const { totalItems, formattedTotal, whatsappUrl } = useOrder()
-const { hasAddress } = useDelivery()
+const { isReady, checkoutHint } = useDelivery()
 </script>
 
 <template>
   <div class="fixed inset-x-0 bottom-0 z-20 border-t border-gold/10 bg-ink/95 backdrop-blur">
     <div class="mx-auto max-w-md px-4 py-3">
       <a
-        v-if="totalItems > 0 && hasAddress"
+        v-if="totalItems > 0 && isReady"
         :href="whatsappUrl"
         target="_blank"
         rel="noopener"
@@ -39,7 +39,7 @@ const { hasAddress } = useDelivery()
         </span>
         <span class="flex items-center gap-2 font-display text-sm tracking-wide text-ember-soft">
           <Icon name="lucide:map-pin" class="size-5" />
-          Agrega tu dirección
+          {{ checkoutHint }}
         </span>
       </a>
       <a
