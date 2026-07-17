@@ -27,7 +27,7 @@ const links = [
         :href="link.href"
         target="_blank"
         rel="noopener"
-        class="group flex items-center justify-end gap-2 text-2xl font-medium text-gold-soft/90 transition hover:text-gold"
+        class="group flex items-center justify-end gap-2 text-md nt-medium text-gold-soft/90 transition hover:text-gold"
       >
         {{ link.label }}
         <Icon :name="link.icon" class="size-5 text-ember-soft transition group-hover:scale-110" />
