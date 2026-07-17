@@ -13,15 +13,24 @@
 
       <div class="mt-8 flex items-center gap-4">
         <DeliveryQr />
-        <p class="flex-1 text-sm leading-snug text-gold-soft/80">
-          Pide tus alas y cerdo al carbón para recoger o a domicilio. Elige tus favoritos y
-          confirma por WhatsApp.
-        </p>
+        <div>
+
+          <p class="flex-1 text-sm leading-snug text-gold-soft/80">
+            Pide tus alas y cerdo al barril para recoger o a domicilio. Elige tus favoritos y
+            confirma por WhatsApp.
+          </p>
+          <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-ember-soft">
+            El pedido se activarà una vez confirmemos el pago por transferencia.
+          </p>
+        </div>
       </div>
 
       <main class="mt-10 space-y-10">
         <WingsSection />
         <PorkSection />
+        <div id="entrega" class="scroll-mt-8">
+          <DeliveryForm />
+        </div>
       </main>
     </div>
 
