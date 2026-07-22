@@ -1,12 +1,5 @@
 <script setup lang="ts">
 const { profile, isAdmin } = useProfile()
-const client = useSupabaseClient()
-const router = useRouter()
-
-const logout = async () => {
-  await client.auth.signOut()
-  await router.push('/login')
-}
 </script>
 
 <template>
@@ -19,13 +12,9 @@ const logout = async () => {
             {{ profile?.nombre ?? 'Alas Carbón &amp; Cerdo' }} · {{ profile?.role }}
           </p>
         </div>
-        <button
-          type="button"
-          class="text-xs font-medium text-gold-soft/70 underline-offset-4 hover:text-gold hover:underline"
-          @click="logout"
-        >
-          Cerrar sesión
-        </button>
+        <NuxtLink to="/dashboard/perfil" aria-label="Mi perfil">
+          <UserAvatar :nombre="profile?.nombre" :avatar-url="profile?.avatar_url" />
+        </NuxtLink>
       </header>
 
       <div class="mt-8">
