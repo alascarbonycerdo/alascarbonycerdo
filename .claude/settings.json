@@ -42,7 +42,13 @@
       "Bash(curl -s http://localhost:3311/ -o /tmp/claude-1000/-home-usurio-Documentos-Nuxt-alascarbonycerdo/906d69fc-260a-4672-b010-1b2be4cca7fa/scratchpad/index_final.html -w 'HTTP %{http_code}\\\\n')",
       "Bash(node -e ' *)",
       "Bash(curl -s -o /dev/null -w \"/api/admin/users sin sesion: %{http_code}\\\\n\" http://localhost:3311/api/admin/users)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(curl -s \"https://api.iconify.design/lucide.json?icons=book-open,utensils-crossed,home,camera,log-out\")",
+      "Bash(curl -s -I http://localhost:3311/dashboard/home)",
+      "Bash(curl -s -I http://localhost:3311/dashboard/manual)",
+      "Bash(curl -s -I http://localhost:3311/dashboard/emplatado)",
+      "Bash(curl -s -I http://localhost:3311/dashboard/perfil)",
+      "Bash(curl -s http://localhost:3311/ -o /dev/null -w \"menu publico: %{http_code}\\\\n\")"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",

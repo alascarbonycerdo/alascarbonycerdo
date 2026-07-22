@@ -8,6 +8,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      brand_manual_sections: {
+        Row: {
+          contenido: string
+          id: string
+          orden: number
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          contenido?: string
+          id?: string
+          orden?: number
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          contenido?: string
+          id?: string
+          orden?: number
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      guia_emplatado: {
+        Row: {
+          foto_url: string | null
+          id: string
+          nombre: string
+          orden: number
+          pasos: string
+          updated_at: string
+        }
+        Insert: {
+          foto_url?: string | null
+          id: string
+          nombre: string
+          orden?: number
+          pasos?: string
+          updated_at?: string
+        }
+        Update: {
+          foto_url?: string | null
+          id?: string
+          nombre?: string
+          orden?: number
+          pasos?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventario_items: {
         Row: {
           consumo_por_venta: number
@@ -82,18 +133,21 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           id: string
           nombre: string | null
           role: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           id: string
           nombre?: string | null
           role?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           id?: string
           nombre?: string | null
