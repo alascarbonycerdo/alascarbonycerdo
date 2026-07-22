@@ -13,7 +13,32 @@
       "mcp__supabase__get_publishable_keys",
       "mcp__supabase__list_tables",
       "Bash(git fetch *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr *)",
+      "Bash(find /home/usurio/Documentos/Nuxt/alascarbonycerdo/node_modules/.pnpm/@nuxtjs+supabase@2.0.9/node_modules/@nuxtjs/supabase/dist -maxdepth 1 -name *.d.ts)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__get_advisors",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__list_migrations",
+      "Bash(mkdir -p /home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase/migrations)",
+      "mcp__supabase__generate_typescript_types",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3311/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3311/dashboard)",
+      "Bash(curl -s -I http://localhost:3311/dashboard)",
+      "Bash(curl -s -I http://localhost:3311/dashboard/costos)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3311/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3311/api/dashboard/inventory)",
+      "Bash(curl -s -o /dev/null -L -w \"redirects: %{num_redirects}, final: %{http_code}, url: %{url_effective}\\\\n\" --max-redirs 10 http://localhost:3311/login)",
+      "Bash(curl -s -o /dev/null -L -w \"redirects: %{num_redirects}, final: %{http_code}, url: %{url_effective}\\\\n\" --max-redirs 10 http://localhost:3311/dashboard)",
+      "Bash(curl -s -o /dev/null -L -w \"redirects: %{num_redirects}, final: %{http_code}, url: %{url_effective}\\\\n\" --max-redirs 10 http://localhost:3311/dashboard/costos)",
+      "Bash(curl -s -o /dev/null -w \"/: %{http_code}\\\\n\" http://localhost:3311/)",
+      "Bash(curl -s -o /dev/null -w \"/login: %{http_code}\\\\n\" http://localhost:3311/login)"
+    ],
+    "additionalDirectories": [
+      "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",
+      "/tmp"
     ]
   }
 }

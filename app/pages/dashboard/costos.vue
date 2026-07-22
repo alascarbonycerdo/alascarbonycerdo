@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: ['staff', 'admin'] })
+
 const { state, load, save, saving, savedAt, addInsumo, removeInsumo } = useCosting()
 
 await useAsyncData('costing-init', () => load())
