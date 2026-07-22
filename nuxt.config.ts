@@ -7,8 +7,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   supabase: {
-    // El menú público y el dashboard deben seguir accesibles hasta que exista
-    // el login con roles; se activa la protección automática de rutas ahí.
+    // La protección de rutas la manejan los middleware propios (staff/admin/guest),
+    // no la redirección automática del módulo: así distinguimos vendedor de
+    // administrador, cosa que el `redirect` del módulo no sabe hacer.
     redirect: false,
   },
 

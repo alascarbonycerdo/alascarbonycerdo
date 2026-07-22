@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { formatCOP } from '#shared/utils/format'
 
+definePageMeta({ middleware: ['staff'] })
+
 const { refresh, pending, error, todayRevenueThousands, todayItemsSold, lowStockCount } = useDashboard()
+const { isAdmin, profile } = useProfile()
+const client = useSupabaseClient()
+const router = useRouter()
 
 await useAsyncData('dashboard-init', () => refresh())
+
+const logout = async () => {
+  await client.auth.signOut()
+  await router.push('/login')
+}
 </script>
 
 <template>
@@ -12,15 +22,20 @@ await useAsyncData('dashboard-init', () => refresh())
       <header class="flex items-center justify-between">
         <div>
           <p class="font-display text-2xl text-gold">Dashboard</p>
-          <p class="text-xs uppercase tracking-widest text-ember-soft">Alas Carbón &amp; Cerdo</p>
+          <p class="text-xs uppercase tracking-widest text-ember-soft">
+            {{ profile?.nombre ?? 'Alas Carbón &amp; Cerdo' }} · {{ profile?.role }}
+          </p>
         </div>
         <div class="flex items-center gap-4 text-xs font-medium text-gold-soft/70">
-          <NuxtLink to="/dashboard/costos" class="underline-offset-4 hover:text-gold hover:underline">
+          <NuxtLink v-if="isAdmin" to="/dashboard/costos" class="underline-offset-4 hover:text-gold hover:underline">
             Costeo
           </NuxtLink>
           <NuxtLink to="/" class="underline-offset-4 hover:text-gold hover:underline">
             Ver menú
           </NuxtLink>
+          <button type="button" class="underline-offset-4 hover:text-gold hover:underline" @click="logout">
+            Cerrar sesión
+          </button>
         </div>
       </header>
 

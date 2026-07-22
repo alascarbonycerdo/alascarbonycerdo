@@ -1,3 +1,4 @@
-export default defineEventHandler(async () => {
-  return getInventory()
+export default defineEventHandler(async (event) => {
+  await requireUser(event)
+  return getInventory(event)
 })
