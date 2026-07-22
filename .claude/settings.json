@@ -34,7 +34,15 @@
       "Bash(curl -s -o /dev/null -L -w \"redirects: %{num_redirects}, final: %{http_code}, url: %{url_effective}\\\\n\" --max-redirs 10 http://localhost:3311/dashboard)",
       "Bash(curl -s -o /dev/null -L -w \"redirects: %{num_redirects}, final: %{http_code}, url: %{url_effective}\\\\n\" --max-redirs 10 http://localhost:3311/dashboard/costos)",
       "Bash(curl -s -o /dev/null -w \"/: %{http_code}\\\\n\" http://localhost:3311/)",
-      "Bash(curl -s -o /dev/null -w \"/login: %{http_code}\\\\n\" http://localhost:3311/login)"
+      "Bash(curl -s -o /dev/null -w \"/login: %{http_code}\\\\n\" http://localhost:3311/login)",
+      "Bash(curl -s \"https://api.iconify.design/lucide.json?icons=shopping-cart,calculator,users,user-plus,shield\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('found:',Object.keys\\(j.icons||{}\\)\\);console.log\\('not found:',j.not_found||[]\\)}\\)\")",
+      "Bash(curl -s -I http://localhost:3311/dashboard/usuarios)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3311/api/admin/users)",
+      "Bash(curl -s http://localhost:3311/ -o /tmp/claude-1000/-home-usurio-Documentos-Nuxt-alascarbonycerdo/906d69fc-260a-4672-b010-1b2be4cca7fa/scratchpad/index_final.html -w 'HTTP %{http_code}\\\\n')",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"/api/admin/users sin sesion: %{http_code}\\\\n\" http://localhost:3311/api/admin/users)",
+      "Bash(git check-ignore *)"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",
