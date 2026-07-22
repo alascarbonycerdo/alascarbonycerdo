@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:supabase.nuxtjs.org)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s -o /dev/null -w \"index: %{http_code}\\\\n\" http://localhost:3311/)",
+      "Bash(curl -s -o /dev/null -w \"dashboard: %{http_code}\\\\n\" http://localhost:3311/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"costos: %{http_code}\\\\n\" http://localhost:3311/dashboard/costos)",
+      "Bash(pnpm typecheck *)",
+      "Bash(rm -f /tmp/tc9.log)",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__get_publishable_keys",
+      "mcp__supabase__list_tables",
+      "Bash(git fetch *)",
+      "Bash(git add *)"
+    ]
+  }
+}

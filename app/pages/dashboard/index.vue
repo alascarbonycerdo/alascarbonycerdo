@@ -14,9 +14,14 @@ await useAsyncData('dashboard-init', () => refresh())
           <p class="font-display text-2xl text-gold">Dashboard</p>
           <p class="text-xs uppercase tracking-widest text-ember-soft">Alas Carbón &amp; Cerdo</p>
         </div>
-        <NuxtLink to="/" class="text-xs font-medium text-gold-soft/70 underline-offset-4 hover:text-gold hover:underline">
-          Ver menú
-        </NuxtLink>
+        <div class="flex items-center gap-4 text-xs font-medium text-gold-soft/70">
+          <NuxtLink to="/dashboard/costos" class="underline-offset-4 hover:text-gold hover:underline">
+            Costeo
+          </NuxtLink>
+          <NuxtLink to="/" class="underline-offset-4 hover:text-gold hover:underline">
+            Ver menú
+          </NuxtLink>
+        </div>
       </header>
 
       <p v-if="error" class="mt-6 rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">

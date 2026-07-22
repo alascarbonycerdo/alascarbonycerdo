@@ -12,8 +12,8 @@ export const wingsCombos: MenuItem[] = [
 ]
 
 export const porkItems: MenuItem[] = [
-  { id: 'chuzo', name: 'Chuzo de Cerdo', detail: '300 gramos', priceThousands: 12 },
-  { id: 'chorizo', name: 'Chorizo', detail: '250 gramos', priceThousands: 13 },
+  { id: 'chuzo', name: 'Chuzo de Cerdo', detail: '200 gramos', priceThousands: 12 },
+  { id: 'chorizo', name: 'Chorizo', detail: 'Artesanal', priceThousands: 13 },
   { id: 'chicharron', name: 'Chicharrón', detail: '300 gramos', priceThousands: 16 },
   { id: 'ceviche', name: 'Ceviche de Chicharrón', detail: '450 gramos', priceThousands: 25 },
   { id: 'costilla', name: 'Costilla', detail: '500 gramos', priceThousands: 28 },

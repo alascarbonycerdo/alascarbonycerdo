@@ -1,10 +1,16 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-16',
 
-  modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/fonts'],
+  modules: ['@nuxt/ui', '@nuxt/icon', '@nuxt/fonts', '@nuxtjs/supabase'],
 
   ssr: true,
   devtools: { enabled: true },
+
+  supabase: {
+    // El menú público y el dashboard deben seguir accesibles hasta que exista
+    // el login con roles; se activa la protección automática de rutas ahí.
+    redirect: false,
+  },
 
   fonts: {
     families: [
@@ -16,7 +22,11 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   components: {
-    dirs: [{ path: '~/components/dashboard', pathPrefix: false }, '~/components'],
+    dirs: [
+      { path: '~/components/dashboard', pathPrefix: false },
+      { path: '~/components/costing', pathPrefix: false },
+      '~/components',
+    ],
   },
 
   nitro: {
