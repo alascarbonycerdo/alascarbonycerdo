@@ -9,14 +9,18 @@ export const useDashboard = () => {
 
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date())
 
+  // $fetch normal no reenvía la cookie de sesión cuando esta llamada corre en el
+  // servidor (SSR de la primera carga); useRequestFetch sí la reenvía.
+  const requestFetch = useRequestFetch()
+
   const refresh = async () => {
     pending.value = true
     error.value = null
     try {
       const [inventoryRes, salesRes, summaryRes] = await Promise.all([
-        $fetch<InventoryItem[]>('/api/dashboard/inventory'),
-        $fetch<SaleRecord[]>('/api/dashboard/sales', { query: { date: today } }),
-        $fetch<DaySummary[]>('/api/dashboard/summary', { query: { days: 7 } }),
+        requestFetch<InventoryItem[]>('/api/dashboard/inventory'),
+        requestFetch<SaleRecord[]>('/api/dashboard/sales', { query: { date: today } }),
+        requestFetch<DaySummary[]>('/api/dashboard/summary', { query: { days: 7 } }),
       ])
       inventory.value = inventoryRes
       todaySales.value = salesRes
