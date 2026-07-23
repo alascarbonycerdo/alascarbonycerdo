@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Database } from '~/types/database.types'
+
 definePageMeta({ middleware: ['guest'] })
 
 const email = ref('')
@@ -6,22 +8,32 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-const client = useSupabaseClient()
+const client = useSupabaseClient<Database>()
 
 const submit = async () => {
   error.value = ''
   loading.value = true
-  const { error: signInError } = await client.auth.signInWithPassword({
+  const { data, error: signInError } = await client.auth.signInWithPassword({
     email: email.value,
     password: password.value,
   })
-  loading.value = false
 
-  if (signInError) {
+  if (signInError || !data.user) {
+    loading.value = false
     error.value = 'Correo o contraseña incorrectos'
     return
   }
 
+  const { data: profile } = await client.from('profiles').select('activo').eq('id', data.user.id).single()
+
+  if (!profile?.activo) {
+    await client.auth.signOut()
+    loading.value = false
+    error.value = 'Tu cuenta está inactiva. Contacta a un administrador.'
+    return
+  }
+
+  loading.value = false
   await navigateTo('/dashboard')
 }
 </script>

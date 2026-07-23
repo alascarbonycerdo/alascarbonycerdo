@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BLOOD_TYPES } from '#shared/types/admin'
 import type { StaffUser } from '#shared/types/admin'
 
 definePageMeta({ middleware: ['staff', 'admin'], layout: 'dashboard' })
@@ -15,7 +16,16 @@ const ROLES = [
   { value: 'cliente', label: 'Cliente' },
 ]
 
-const form = reactive({ email: '', password: '', nombre: '', role: 'vendedor', puntoVentaId: '' })
+const form = reactive({
+  email: '',
+  password: '',
+  nombre: '',
+  role: 'vendedor',
+  puntoVentaId: '',
+  celular: '',
+  documento: '',
+  tipoSangre: '',
+})
 const creating = ref(false)
 const createError = ref('')
 
@@ -23,12 +33,21 @@ const submitCreate = async () => {
   createError.value = ''
   creating.value = true
   try {
-    await createUser({ ...form, puntoVentaId: form.puntoVentaId || null })
+    await createUser({
+      ...form,
+      puntoVentaId: form.puntoVentaId || null,
+      celular: form.celular || undefined,
+      documento: form.documento || undefined,
+      tipoSangre: form.tipoSangre || undefined,
+    })
     form.email = ''
     form.password = ''
     form.nombre = ''
     form.role = 'vendedor'
     form.puntoVentaId = ''
+    form.celular = ''
+    form.documento = ''
+    form.tipoSangre = ''
   } catch (e) {
     createError.value = e instanceof Error ? e.message : 'No se pudo crear el usuario'
   } finally {
@@ -39,7 +58,16 @@ const submitCreate = async () => {
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
 
 const editingId = ref<string | null>(null)
-const editForm = reactive({ nombre: '', role: 'vendedor', email: '', password: '', puntoVentaId: '' })
+const editForm = reactive({
+  nombre: '',
+  role: 'vendedor',
+  email: '',
+  password: '',
+  puntoVentaId: '',
+  celular: '',
+  documento: '',
+  tipoSangre: '',
+})
 const saving = ref(false)
 const editError = ref('')
 
@@ -50,6 +78,9 @@ const startEdit = (user: StaffUser) => {
   editForm.email = user.email
   editForm.password = ''
   editForm.puntoVentaId = user.puntoVentaId ?? ''
+  editForm.celular = user.celular ?? ''
+  editForm.documento = user.documento ?? ''
+  editForm.tipoSangre = user.tipoSangre ?? ''
   editError.value = ''
 }
 
@@ -67,6 +98,9 @@ const saveEdit = async (id: string) => {
       email: editForm.email || undefined,
       password: editForm.password || undefined,
       puntoVentaId: editForm.puntoVentaId || null,
+      celular: editForm.celular,
+      documento: editForm.documento,
+      tipoSangre: editForm.tipoSangre,
     })
     editingId.value = null
   } catch (e) {
@@ -89,6 +123,21 @@ const removeUser = async (user: StaffUser) => {
     deleteError.value = e instanceof Error ? e.message : 'No se pudo eliminar'
   } finally {
     deletingId.value = null
+  }
+}
+
+const togglingId = ref<string | null>(null)
+const toggleError = ref('')
+
+const toggleActivo = async (user: StaffUser) => {
+  toggleError.value = ''
+  togglingId.value = user.id
+  try {
+    await updateUser(user.id, { activo: !user.activo })
+  } catch (e) {
+    toggleError.value = e instanceof Error ? e.message : 'No se pudo cambiar el estado'
+  } finally {
+    togglingId.value = null
   }
 }
 </script>
@@ -149,6 +198,35 @@ const removeUser = async (user: StaffUser) => {
           </select>
         </label>
 
+        <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+          Celular (opcional)
+          <input
+            v-model="form.celular"
+            type="tel"
+            class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+          >
+        </label>
+
+        <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+          Documento (opcional)
+          <input
+            v-model="form.documento"
+            type="text"
+            class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+          >
+        </label>
+
+        <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+          Tipo de sangre (opcional)
+          <select
+            v-model="form.tipoSangre"
+            class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+          >
+            <option value="">Sin especificar</option>
+            <option v-for="bt in BLOOD_TYPES" :key="bt" :value="bt">{{ bt }}</option>
+          </select>
+        </label>
+
         <div class="sm:col-span-2">
           <p v-if="createError" class="mb-2 text-xs text-ember-soft">{{ createError }}</p>
           <button
@@ -168,6 +246,7 @@ const removeUser = async (user: StaffUser) => {
 
       <p v-if="error" class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">{{ error }}</p>
       <p v-if="deleteError" class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">{{ deleteError }}</p>
+      <p v-if="toggleError" class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">{{ toggleError }}</p>
 
       <div class="space-y-2" :class="{ 'opacity-60': pending }">
         <div
@@ -177,31 +256,76 @@ const removeUser = async (user: StaffUser) => {
         >
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p class="text-sm font-semibold text-gold-soft">{{ user.nombre || user.email }}</p>
+              <p class="flex items-center gap-2 text-sm font-semibold text-gold-soft">
+                {{ user.nombre || user.email }}
+                <span
+                  class="rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide"
+                  :class="user.activo ? 'bg-emerald-500/10 text-emerald-400' : 'bg-ember/15 text-ember-soft'"
+                >
+                  {{ user.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </p>
               <p class="text-xs text-gold-soft/60">
                 {{ user.email }} · {{ user.role }}
                 <span v-if="user.puntoVentaNombre"> · {{ user.puntoVentaNombre }}</span>
                 · desde {{ formatDate(user.createdAt) }}
               </p>
+              <p v-if="user.celular || user.documento || user.tipoSangre" class="text-xs text-gold-soft/50">
+                <span v-if="user.celular">{{ user.celular }}</span>
+                <span v-if="user.documento"> · CC {{ user.documento }}</span>
+                <span v-if="user.tipoSangre"> · Tipo {{ user.tipoSangre }}</span>
+              </p>
             </div>
 
-            <div class="flex items-center gap-3">
-              <button
-                type="button"
-                class="text-xs font-semibold text-gold-soft/70 hover:text-gold"
-                @click="editingId === user.id ? cancelEdit() : startEdit(user)"
-              >
-                {{ editingId === user.id ? 'Cancelar' : 'Editar' }}
-              </button>
-              <button
-                v-if="user.id !== currentUser?.sub"
-                type="button"
-                :disabled="deletingId === user.id"
-                class="text-xs font-semibold text-ember-soft hover:text-ember disabled:opacity-40"
-                @click="removeUser(user)"
-              >
-                {{ deletingId === user.id ? 'Eliminando…' : 'Eliminar' }}
-              </button>
+            <div class="flex items-center gap-1.5">
+              <div class="group relative">
+                <button
+                  type="button"
+                  class="flex size-8 items-center justify-center rounded-lg text-gold-soft/70 transition hover:bg-ink hover:text-gold"
+                  @click="editingId === user.id ? cancelEdit() : startEdit(user)"
+                >
+                  <Icon name="lucide:pencil" class="size-4" />
+                </button>
+                <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[0.65rem] text-gold-soft opacity-0 ring-1 ring-gold/20 transition group-hover:opacity-100">
+                  {{ editingId === user.id ? 'Cancelar' : 'Editar' }}
+                </span>
+              </div>
+
+              <div v-if="user.id !== currentUser?.sub" class="group relative">
+                <button
+                  type="button"
+                  :disabled="togglingId === user.id"
+                  class="relative flex size-8 items-center justify-center rounded-lg text-gold-soft/70 transition hover:bg-ink hover:text-gold disabled:opacity-40"
+                  @click="toggleActivo(user)"
+                >
+                  <Icon name="lucide:power" class="size-4" :class="{ invisible: togglingId === user.id }" />
+                  <span
+                    v-if="togglingId === user.id"
+                    class="absolute size-3.5 animate-spin rounded-full border-2 border-gold-soft/30 border-t-gold"
+                  />
+                </button>
+                <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[0.65rem] text-gold-soft opacity-0 ring-1 ring-gold/20 transition group-hover:opacity-100">
+                  {{ togglingId === user.id ? 'Guardando…' : user.activo ? 'Desactivar' : 'Activar' }}
+                </span>
+              </div>
+
+              <div v-if="user.id !== currentUser?.sub" class="group relative">
+                <button
+                  type="button"
+                  :disabled="deletingId === user.id"
+                  class="relative flex size-8 items-center justify-center rounded-lg text-ember-soft/80 transition hover:bg-ember/10 hover:text-ember disabled:opacity-40"
+                  @click="removeUser(user)"
+                >
+                  <Icon name="lucide:trash-2" class="size-4" :class="{ invisible: deletingId === user.id }" />
+                  <span
+                    v-if="deletingId === user.id"
+                    class="absolute size-3.5 animate-spin rounded-full border-2 border-ember-soft/30 border-t-ember"
+                  />
+                </button>
+                <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[0.65rem] text-gold-soft opacity-0 ring-1 ring-gold/20 transition group-hover:opacity-100">
+                  {{ deletingId === user.id ? 'Eliminando…' : 'Eliminar' }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -255,6 +379,35 @@ const removeUser = async (user: StaffUser) => {
                 placeholder="Dejar vacío para no cambiarla"
                 class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
               >
+            </label>
+
+            <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+              Celular
+              <input
+                v-model="editForm.celular"
+                type="tel"
+                class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+              >
+            </label>
+
+            <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+              Documento
+              <input
+                v-model="editForm.documento"
+                type="text"
+                class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+              >
+            </label>
+
+            <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+              Tipo de sangre
+              <select
+                v-model="editForm.tipoSangre"
+                class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+              >
+                <option value="">Sin especificar</option>
+                <option v-for="bt in BLOOD_TYPES" :key="bt" :value="bt">{{ bt }}</option>
+              </select>
             </label>
 
             <div class="sm:col-span-2">

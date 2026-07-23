@@ -6,6 +6,7 @@ interface Profile {
   avatar_url: string | null
   punto_venta_id: string | null
   puntos_venta: { nombre: string } | null
+  activo: boolean
 }
 
 export const useProfile = () => {
@@ -23,7 +24,7 @@ export const useProfile = () => {
     loading.value = true
     const { data, error } = await client
       .from('profiles')
-      .select('role, nombre, avatar_url, punto_venta_id, puntos_venta(nombre)')
+      .select('role, nombre, avatar_url, punto_venta_id, puntos_venta(nombre), activo')
       .eq('id', user.value.sub)
       .single()
     if (error) console.error('[useProfile] No se pudo cargar el perfil:', error.message)

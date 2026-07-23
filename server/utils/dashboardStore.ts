@@ -229,6 +229,33 @@ export async function restock(event: H3Event, itemId: string, amount: number, no
   return toInventoryItem(data, dishes, stock)
 }
 
+export async function removeStock(event: H3Event, itemId: string, amount: number, note?: string): Promise<InventoryItem> {
+  if (amount <= 0) {
+    throw createError({ statusCode: 400, statusMessage: 'La cantidad debe ser mayor a 0' })
+  }
+
+  const client = await serverSupabaseClient(event)
+  const puntoVentaId = await resolvePuntoVentaId(event)
+
+  // Solo el administrador puede descontar stock manualmente (mermas, correcciones);
+  // el chequeo de rol vive en la función, igual que restock_item.
+  const { error: rpcError } = await client.rpc('remove_stock_item', {
+    p_item_id: itemId,
+    p_cantidad: amount,
+    p_nota: note ?? null,
+  })
+
+  if (rpcError) {
+    const statusCode = rpcError.message.includes('No autorizado') ? 403 : 500
+    throw createError({ statusCode, statusMessage: rpcError.message })
+  }
+
+  const { data, error } = await client.from('inventario_items').select('*').eq('id', itemId).single()
+  if (error || !data) throw createError({ statusCode: 404, statusMessage: 'Insumo no encontrado' })
+  const [dishes, stock] = await Promise.all([getItemDishes(event, itemId), getItemStock(event, itemId, puntoVentaId)])
+  return toInventoryItem(data, dishes, stock)
+}
+
 export async function updateInventoryConfig(
   event: H3Event,
   itemId: string,

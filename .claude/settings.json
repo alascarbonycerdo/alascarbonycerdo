@@ -60,7 +60,14 @@
       "Bash(curl -s -o /dev/null -w \"puntos-venta: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/puntos-venta)",
       "Bash(curl -s http://localhost:3311/api/admin/puntos-venta -o /tmp/pv.json -w \"puntos-venta api: HTTP %{http_code}\\\\n\")",
       "Bash(curl -s -o /dev/null -w \"usuarios: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/usuarios)",
-      "Bash(curl -s http://localhost:3311/api/dashboard/inventory -o /tmp/inv3.json -w \"inventory api: HTTP %{http_code}\\\\n\")"
+      "Bash(curl -s http://localhost:3311/api/dashboard/inventory -o /tmp/inv3.json -w \"inventory api: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"higiene: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/higiene)",
+      "Bash(curl -s -o /dev/null -w \"home: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/home)",
+      "Bash(curl -s http://localhost:3311/api/dashboard/inventory/alas/remove -X POST -H \"Content-Type: application/json\" -d '{\"amount\":1}' -o /tmp/remove_resp.json -w \"remove no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"login: HTTP %{http_code}\\\\n\" http://localhost:3311/login)",
+      "Bash(grep -n \"policyname\\\\|tablename\" -A2 /dev/null; echo done)",
+      "Read(//dev/**)",
+      "Bash(curl -s http://localhost:3311/api/admin/users -o /tmp/users_resp.json -w \"users api no-auth: HTTP %{http_code}\\\\n\")"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",

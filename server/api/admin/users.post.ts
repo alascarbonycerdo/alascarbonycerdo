@@ -1,4 +1,5 @@
 import { serverSupabaseServiceRole } from '#supabase/server'
+import { BLOOD_TYPES } from '#shared/types/admin'
 
 const VALID_ROLES = ['cliente', 'vendedor', 'administrador']
 
@@ -11,6 +12,9 @@ export default defineEventHandler(async (event) => {
     nombre?: string
     role?: string
     puntoVentaId?: string | null
+    celular?: string
+    documento?: string
+    tipoSangre?: string
   }>(event)
 
   if (!body.email || !body.password) {
@@ -23,6 +27,9 @@ export default defineEventHandler(async (event) => {
   const role = body.role ?? 'vendedor'
   if (!VALID_ROLES.includes(role)) {
     throw createError({ statusCode: 400, statusMessage: 'Rol inválido' })
+  }
+  if (body.tipoSangre && !BLOOD_TYPES.includes(body.tipoSangre as (typeof BLOOD_TYPES)[number])) {
+    throw createError({ statusCode: 400, statusMessage: 'Tipo de sangre inválido' })
   }
 
   const serviceClient = serverSupabaseServiceRole(event)
@@ -39,10 +46,19 @@ export default defineEventHandler(async (event) => {
   }
 
   // El trigger on_auth_user_created ya creó el perfil con role='vendedor' por defecto.
-  if (role !== 'vendedor' || body.puntoVentaId !== undefined) {
-    const patch: { role?: string; punto_venta_id?: string | null } = {}
+  if (
+    role !== 'vendedor' ||
+    body.puntoVentaId !== undefined ||
+    body.celular !== undefined ||
+    body.documento !== undefined ||
+    body.tipoSangre !== undefined
+  ) {
+    const patch: { role?: string; punto_venta_id?: string | null; celular?: string; documento?: string; tipo_sangre?: string } = {}
     if (role !== 'vendedor') patch.role = role
     if (body.puntoVentaId !== undefined) patch.punto_venta_id = body.puntoVentaId
+    if (body.celular !== undefined) patch.celular = body.celular
+    if (body.documento !== undefined) patch.documento = body.documento
+    if (body.tipoSangre !== undefined) patch.tipo_sangre = body.tipoSangre
     const { error: patchError } = await serviceClient.from('profiles').update(patch).eq('id', data.user.id)
     if (patchError) throw createError({ statusCode: 500, statusMessage: patchError.message })
   }

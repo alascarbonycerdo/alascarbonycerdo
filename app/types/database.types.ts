@@ -223,28 +223,40 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activo: boolean
           avatar_url: string | null
+          celular: string | null
           created_at: string
+          documento: string | null
           id: string
           nombre: string | null
           punto_venta_id: string | null
           role: string
+          tipo_sangre: string | null
         }
         Insert: {
+          activo?: boolean
           avatar_url?: string | null
+          celular?: string | null
           created_at?: string
+          documento?: string | null
           id: string
           nombre?: string | null
           punto_venta_id?: string | null
           role?: string
+          tipo_sangre?: string | null
         }
         Update: {
+          activo?: boolean
           avatar_url?: string | null
+          celular?: string | null
           created_at?: string
+          documento?: string | null
           id?: string
           nombre?: string | null
           punto_venta_id?: string | null
           role?: string
+          tipo_sangre?: string | null
         }
         Relationships: [
           {
@@ -317,6 +329,7 @@ export type Database = {
     Functions: {
       current_role_is: { Args: { required: string[] }; Returns: boolean }
       restock_item: { Args: { p_item_id: string; p_cantidad: number; p_nota?: string | null }; Returns: undefined }
+      remove_stock_item: { Args: { p_item_id: string; p_cantidad: number; p_nota?: string | null }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

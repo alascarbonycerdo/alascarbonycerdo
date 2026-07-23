@@ -6,6 +6,9 @@ export interface CreateUserPayload {
   nombre?: string
   role: string
   puntoVentaId?: string | null
+  celular?: string
+  documento?: string
+  tipoSangre?: string
 }
 
 export interface UpdateUserPayload {
@@ -14,6 +17,10 @@ export interface UpdateUserPayload {
   email?: string
   password?: string
   puntoVentaId?: string | null
+  activo?: boolean
+  celular?: string
+  documento?: string
+  tipoSangre?: string
 }
 
 export const useUsers = () => {

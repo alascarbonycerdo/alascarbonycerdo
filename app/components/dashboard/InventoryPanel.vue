@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { inventory, addStock, updateInventoryConfig } = useDashboard()
+const { inventory, addStock, removeStock, updateInventoryConfig } = useDashboard()
+const { isAdmin } = useProfile()
 
 const packages = reactive<Record<string, number>>({})
 const pkgCount = (id: string) => packages[id] ?? 0
@@ -19,6 +20,27 @@ const submitRestock = async (item: { id: string; unitsPerPackage: number }) => {
     packages[item.id] = 0
   } finally {
     submitting.value = null
+  }
+}
+
+const removals = reactive<Record<string, number>>({})
+const removeQty = (id: string) => removals[id] ?? 0
+const incRemove = (item: { id: string; currentStock: number }) =>
+  (removals[item.id] = Math.min(item.currentStock, removeQty(item.id) + 1))
+const decRemove = (id: string) => (removals[id] = Math.max(0, removeQty(id) - 1))
+
+const removing = ref<string | null>(null)
+
+const submitRemove = async (item: { id: string; name: string }) => {
+  const qty = removeQty(item.id)
+  if (!qty) return
+  if (!confirm(`¿Quitar ${qty} unidades de ${item.name} del inventario?`)) return
+  removing.value = item.id
+  try {
+    await removeStock(item.id, qty)
+    removals[item.id] = 0
+  } finally {
+    removing.value = null
   }
 }
 
@@ -124,6 +146,23 @@ const onUnitsPerPackageChange = (id: string, value: string) => {
             @click="submitRestock(item)"
           >
             Agregar
+          </button>
+        </div>
+
+        <div v-if="isAdmin" class="mt-3 flex items-center justify-between gap-3 border-t border-gold/10 pt-3">
+          <div class="flex items-center gap-2">
+            <QuantityStepper :qty="removeQty(item.id)" @increment="incRemove(item)" @decrement="decRemove(item.id)" />
+            <span class="text-xs text-gold-soft/60">
+              unidad{{ removeQty(item.id) === 1 ? '' : 'es' }} a quitar
+            </span>
+          </div>
+          <button
+            type="button"
+            :disabled="!removeQty(item.id) || removing === item.id"
+            class="rounded-lg bg-ember/15 px-3 py-1.5 text-sm font-semibold text-ember-soft transition hover:bg-ember/25 disabled:opacity-30"
+            @click="submitRemove(item)"
+          >
+            Quitar
           </button>
         </div>
       </div>
