@@ -22,7 +22,7 @@ export interface Movement {
   date: string
   time: string
   dishId: string
-  type: 'restock' | 'sale'
+  type: 'restock' | 'sale' | 'merma'
   amount: number
   note?: string
 }

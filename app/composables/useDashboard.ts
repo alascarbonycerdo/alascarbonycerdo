@@ -46,6 +46,14 @@ export const useDashboard = () => {
     await refresh()
   }
 
+  const removeStock = async (dishId: string, amount: number, note?: string) => {
+    await $fetch(`/api/dashboard/inventory/${dishId}/remove`, {
+      method: 'POST',
+      body: { amount, note },
+    })
+    await refresh()
+  }
+
   const updateInventoryConfig = async (
     itemId: string,
     patch: { dishId?: string; consumptionPerSale?: number; unitsPerPackage?: number },
@@ -78,6 +86,7 @@ export const useDashboard = () => {
     refresh,
     registerSale,
     addStock,
+    removeStock,
     updateInventoryConfig,
     todayRevenueThousands,
     todayItemsSold,
