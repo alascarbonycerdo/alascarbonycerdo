@@ -1,30 +1,48 @@
 <script setup lang="ts">
-const { inventory, addStock, setConsumption } = useDashboard()
+const { inventory, addStock, updateInventoryConfig } = useDashboard()
 
-const restockAmounts = reactive<Record<string, number>>({})
+const packages = reactive<Record<string, number>>({})
+const pkgCount = (id: string) => packages[id] ?? 0
+const incPkg = (id: string) => (packages[id] = pkgCount(id) + 1)
+const decPkg = (id: string) => (packages[id] = Math.max(0, pkgCount(id) - 1))
 
-const restockAmount = (id: string) => restockAmounts[id] ?? 500
+const unitsToAdd = (item: { id: string; unitsPerPackage: number }) => pkgCount(item.id) * item.unitsPerPackage
 
-const submitRestock = async (id: string) => {
-  const amount = restockAmount(id)
-  if (!amount || amount <= 0) return
-  await addStock(id, amount)
-  restockAmounts[id] = 0
+const submitting = ref<string | null>(null)
+
+const submitRestock = async (item: { id: string; unitsPerPackage: number }) => {
+  const units = unitsToAdd(item)
+  if (!units) return
+  submitting.value = item.id
+  try {
+    await addStock(item.id, units)
+    packages[item.id] = 0
+  } finally {
+    submitting.value = null
+  }
 }
 
-const onConsumptionChange = (id: string, value: string) => {
+const minConsumption = (item: { dishes: { consumptionPerSale: number }[] }) => {
+  const min = Math.min(...item.dishes.map((d) => d.consumptionPerSale), Infinity)
+  return Number.isFinite(min) ? min : 0
+}
+
+const onConsumptionChange = (itemId: string, dishId: string, value: string) => {
   const parsed = Number(value)
-  if (Number.isNaN(parsed) || parsed < 0) return
-  setConsumption(id, parsed)
+  if (Number.isNaN(parsed) || parsed <= 0) return
+  updateInventoryConfig(itemId, { dishId, consumptionPerSale: parsed })
 }
 
-const formatGrams = (grams: number) =>
-  grams >= 1000 ? `${(grams / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 })} kg` : `${grams} g`
+const onUnitsPerPackageChange = (id: string, value: string) => {
+  const parsed = Number(value)
+  if (Number.isNaN(parsed) || parsed < 1) return
+  updateInventoryConfig(id, { unitsPerPackage: parsed })
+}
 </script>
 
 <template>
   <section class="space-y-3">
-    <h2 class="font-display text-2xl text-gold">Inventario crudo</h2>
+    <h2 class="font-display text-2xl text-gold">Inventario</h2>
 
     <div class="space-y-2">
       <div
@@ -43,56 +61,70 @@ const formatGrams = (grams: number) =>
           <span
             class="flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide"
             :class="
-              item.currentStock < item.consumptionPerSale
+              item.currentStock < minConsumption(item)
                 ? 'bg-ember/15 text-ember-soft'
                 : 'bg-emerald-500/10 text-emerald-400'
             "
           >
             <Icon
-              :name="item.currentStock < item.consumptionPerSale ? 'lucide:alert-triangle' : 'lucide:check-circle-2'"
+              :name="item.currentStock < minConsumption(item) ? 'lucide:alert-triangle' : 'lucide:check-circle-2'"
               class="size-3.5"
             />
-            {{ item.currentStock < item.consumptionPerSale ? 'Stock bajo' : 'OK' }}
+            {{ item.currentStock < minConsumption(item) ? 'Stock bajo' : 'OK' }}
           </span>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
+        <div class="mt-3 flex items-end justify-between gap-3">
           <div>
             <p class="text-[0.65rem] uppercase tracking-widest text-gold-soft/60">En stock</p>
-            <p class="font-display text-xl text-gold">{{ formatGrams(item.currentStock) }}</p>
+            <p class="font-display text-xl text-gold">{{ item.currentStock }} unidades</p>
           </div>
 
           <label class="flex flex-col text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
-            Consumo / venta (g)
+            Unidades / paquete
             <input
               type="number"
-              min="0"
-              :value="item.consumptionPerSale"
-              class="mt-1 w-24 rounded-lg bg-ink px-2 py-1 text-sm text-gold ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
-              @change="onConsumptionChange(item.id, ($event.target as HTMLInputElement).value)"
+              min="1"
+              :value="item.unitsPerPackage"
+              class="mt-1 w-20 rounded-lg bg-ink px-2 py-1 text-sm text-gold ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+              @change="onUnitsPerPackageChange(item.id, ($event.target as HTMLInputElement).value)"
             >
           </label>
+        </div>
 
-          <div class="flex items-end gap-2">
-            <label class="flex flex-col text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
-              Agregar stock (g)
+        <div v-if="item.dishes.length" class="mt-3 space-y-1.5 border-t border-gold/10 pt-3">
+          <p class="text-[0.65rem] uppercase tracking-widest text-gold-soft/60">Consumo por plato</p>
+          <div v-for="dish in item.dishes" :key="dish.dishId" class="flex items-center justify-between gap-3">
+            <span class="text-sm text-gold-soft">{{ dish.dishName }}</span>
+            <label class="flex items-center gap-1.5 text-[0.65rem] text-gold-soft/60">
               <input
                 type="number"
-                min="0"
-                step="50"
-                :value="restockAmount(item.id)"
-                class="mt-1 w-24 rounded-lg bg-ink px-2 py-1 text-sm text-gold ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
-                @input="restockAmounts[item.id] = Number(($event.target as HTMLInputElement).value)"
+                min="1"
+                :value="dish.consumptionPerSale"
+                class="w-16 rounded-lg bg-ink px-2 py-1 text-sm text-gold ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+                @change="onConsumptionChange(item.id, dish.dishId, ($event.target as HTMLInputElement).value)"
               >
+              unidades / venta
             </label>
-            <button
-              type="button"
-              class="rounded-lg bg-gold px-3 py-1.5 text-sm font-semibold text-ink transition hover:bg-gold-soft"
-              @click="submitRestock(item.id)"
-            >
-              Agregar
-            </button>
           </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between gap-3 border-t border-gold/10 pt-3">
+          <div class="flex items-center gap-2">
+            <QuantityStepper :qty="pkgCount(item.id)" @increment="incPkg(item.id)" @decrement="decPkg(item.id)" />
+            <span class="text-xs text-gold-soft/60">
+              paquete{{ pkgCount(item.id) === 1 ? '' : 's' }}
+              <span v-if="pkgCount(item.id)" class="text-gold">= {{ unitsToAdd(item) }} unidades</span>
+            </span>
+          </div>
+          <button
+            type="button"
+            :disabled="!pkgCount(item.id) || submitting === item.id"
+            class="rounded-lg bg-gold px-3 py-1.5 text-sm font-semibold text-ink transition hover:bg-gold-soft disabled:opacity-30"
+            @click="submitRestock(item)"
+          >
+            Agregar
+          </button>
         </div>
       </div>
     </div>

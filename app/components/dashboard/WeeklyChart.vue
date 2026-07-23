@@ -122,7 +122,7 @@ const tooltipDay = computed(() => (hovered.value !== null ? weeklySummary.value[
             <th class="px-3 py-2 font-medium">Día</th>
             <th class="px-3 py-2 font-medium">Ventas</th>
             <th class="px-3 py-2 font-medium">Ítems</th>
-            <th class="px-3 py-2 font-medium">Proteína usada</th>
+            <th class="px-3 py-2 font-medium">Unidades usadas</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gold/10 tabular-nums">
@@ -130,7 +130,7 @@ const tooltipDay = computed(() => (hovered.value !== null ? weeklySummary.value[
             <td class="px-3 py-2 text-gold-soft">{{ day.label }}</td>
             <td class="px-3 py-2 text-gold">{{ formatCOP(day.revenueThousands) }}</td>
             <td class="px-3 py-2 text-gold-soft">{{ day.itemsSold }}</td>
-            <td class="px-3 py-2 text-gold-soft">{{ day.proteinConsumedGrams.toLocaleString('es-CO') }} g</td>
+            <td class="px-3 py-2 text-gold-soft">{{ day.unitsConsumed.toLocaleString('es-CO') }}</td>
           </tr>
         </tbody>
       </table>
