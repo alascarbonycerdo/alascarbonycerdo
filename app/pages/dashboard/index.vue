@@ -4,6 +4,7 @@ import { formatCOP } from '#shared/utils/format'
 definePageMeta({ middleware: ['staff'], layout: 'dashboard' })
 
 const { refresh, pending, error, todayRevenueThousands, todayItemsSold, lowStockCount } = useDashboard()
+const { isAdmin } = useProfile()
 
 await useAsyncData('dashboard-init', () => refresh())
 </script>
@@ -22,8 +23,8 @@ await useAsyncData('dashboard-init', () => refresh())
 
     <div class="mt-10 space-y-12" :class="{ 'opacity-60': pending }">
       <SalesPanel />
-      <InventoryPanel />
       <WeeklyChart />
+      <SalesHistory v-if="isAdmin" />
     </div>
   </div>
 </template>

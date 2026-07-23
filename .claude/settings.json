@@ -48,7 +48,19 @@
       "Bash(curl -s -I http://localhost:3311/dashboard/manual)",
       "Bash(curl -s -I http://localhost:3311/dashboard/emplatado)",
       "Bash(curl -s -I http://localhost:3311/dashboard/perfil)",
-      "Bash(curl -s http://localhost:3311/ -o /dev/null -w \"menu publico: %{http_code}\\\\n\")"
+      "Bash(curl -s http://localhost:3311/ -o /dev/null -w \"menu publico: %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"DELETE /api/admin/users/x sin sesion: %{http_code}\\\\n\" -X DELETE http://localhost:3311/api/admin/users/fake-id)",
+      "Bash(curl -s \"https://api.iconify.design/lucide.json?icons=calendar\")",
+      "Bash(curl -s -o /dev/null -w \"DELETE /api/dashboard/sales/x sin sesion: %{http_code}\\\\n\" -X DELETE http://localhost:3311/api/dashboard/sales/fake-id)",
+      "Bash(curl -sD - http://localhost:3311/ -o /dev/null)",
+      "Bash(curl -s http://localhost:3311/api/dashboard/inventory -o /tmp/inv_resp.json -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard)",
+      "Bash(curl -s http://localhost:3311/api/dashboard/inventory -o /tmp/inv2.json -w \"inventory: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"dashboard: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"puntos-venta: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/puntos-venta)",
+      "Bash(curl -s http://localhost:3311/api/admin/puntos-venta -o /tmp/pv.json -w \"puntos-venta api: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"usuarios: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/usuarios)",
+      "Bash(curl -s http://localhost:3311/api/dashboard/inventory -o /tmp/inv3.json -w \"inventory api: HTTP %{http_code}\\\\n\")"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",
