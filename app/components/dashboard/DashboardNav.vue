@@ -27,13 +27,12 @@ const isActive = (path: string) => route.path === path
       </NuxtLink>
 
       <NuxtLink
-        v-if="isAdmin"
-        to="/dashboard/costos"
+        to="/dashboard/inventario"
         class="flex flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-xs font-medium transition"
-        :class="isActive('/dashboard/costos') ? 'text-gold' : 'text-gold-soft/60 hover:text-gold-soft'"
+        :class="isActive('/dashboard/inventario') ? 'text-gold' : 'text-gold-soft/60 hover:text-gold-soft'"
       >
-        <Icon name="lucide:calculator" class="size-5" />
-        Costeo
+        <Icon name="lucide:boxes" class="size-5" />
+        Inventario
       </NuxtLink>
 
       <NuxtLink
@@ -44,6 +43,16 @@ const isActive = (path: string) => route.path === path
       >
         <Icon name="lucide:users" class="size-5" />
         Usuarios
+      </NuxtLink>
+
+      <NuxtLink
+        v-if="isAdmin"
+        to="/dashboard/puntos-venta"
+        class="flex flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-xs font-medium transition"
+        :class="route.path.startsWith('/dashboard/puntos-venta') ? 'text-gold' : 'text-gold-soft/60 hover:text-gold-soft'"
+      >
+        <Icon name="lucide:store" class="size-5" />
+        Puntos
       </NuxtLink>
 
       <NuxtLink

@@ -1,6 +1,10 @@
 export default defineEventHandler(async (event) => {
   await requireUser(event)
-  const dishId = getRouterParam(event, 'id')!
-  const body = await readBody<{ consumptionPerSale: number }>(event)
-  return updateConsumption(event, dishId, Number(body.consumptionPerSale))
+  const itemId = getRouterParam(event, 'id')!
+  const body = await readBody<{ dishId?: string; consumptionPerSale?: number; unitsPerPackage?: number }>(event)
+  return updateInventoryConfig(event, itemId, {
+    dishId: body.dishId,
+    consumptionPerSale: body.consumptionPerSale !== undefined ? Number(body.consumptionPerSale) : undefined,
+    unitsPerPackage: body.unitsPerPackage !== undefined ? Number(body.unitsPerPackage) : undefined,
+  })
 })

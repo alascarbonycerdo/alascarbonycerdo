@@ -59,30 +59,110 @@ export type Database = {
         }
         Relationships: []
       }
-      inventario_items: {
+      dish_inventory_map: {
         Row: {
           consumo_por_venta: number
+          dish_id: string
+          inventario_item_id: string
+        }
+        Insert: {
+          consumo_por_venta?: number
+          dish_id: string
+          inventario_item_id: string
+        }
+        Update: {
+          consumo_por_venta?: number
+          dish_id?: string
+          inventario_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'dish_inventory_map_inventario_item_id_fkey'
+            columns: ['inventario_item_id']
+            isOneToOne: false
+            referencedRelation: 'inventario_items'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      inventario_items: {
+        Row: {
           detalle: string | null
           id: string
           nombre: string
+          unidades_por_paquete: number
+        }
+        Insert: {
+          detalle?: string | null
+          id: string
+          nombre: string
+          unidades_por_paquete?: number
+        }
+        Update: {
+          detalle?: string | null
+          id?: string
+          nombre?: string
+          unidades_por_paquete?: number
+        }
+        Relationships: []
+      }
+      inventario_stock: {
+        Row: {
+          item_id: string
+          punto_venta_id: string
           stock_actual: number
           updated_at: string
         }
         Insert: {
-          consumo_por_venta?: number
-          detalle?: string | null
-          id: string
-          nombre: string
+          item_id: string
+          punto_venta_id: string
           stock_actual?: number
           updated_at?: string
         }
         Update: {
-          consumo_por_venta?: number
-          detalle?: string | null
-          id?: string
-          nombre?: string
+          item_id?: string
+          punto_venta_id?: string
           stock_actual?: number
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'inventario_stock_item_id_fkey'
+            columns: ['item_id']
+            isOneToOne: false
+            referencedRelation: 'inventario_items'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'inventario_stock_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      puntos_venta: {
+        Row: {
+          activo: boolean
+          created_at: string
+          direccion: string | null
+          id: string
+          nombre: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          direccion?: string | null
+          id?: string
+          nombre?: string
         }
         Relationships: []
       }
@@ -94,6 +174,7 @@ export type Database = {
           dish_id: string
           id: string
           nota: string | null
+          punto_venta_id: string
           tipo: string
         }
         Insert: {
@@ -103,6 +184,7 @@ export type Database = {
           dish_id: string
           id?: string
           nota?: string | null
+          punto_venta_id: string
           tipo: string
         }
         Update: {
@@ -112,6 +194,7 @@ export type Database = {
           dish_id?: string
           id?: string
           nota?: string | null
+          punto_venta_id?: string
           tipo?: string
         }
         Relationships: [
@@ -129,6 +212,13 @@ export type Database = {
             referencedRelation: 'inventario_items'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'movimientos_inventario_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
         ]
       }
       profiles: {
@@ -137,6 +227,7 @@ export type Database = {
           created_at: string
           id: string
           nombre: string | null
+          punto_venta_id: string | null
           role: string
         }
         Insert: {
@@ -144,6 +235,7 @@ export type Database = {
           created_at?: string
           id: string
           nombre?: string | null
+          punto_venta_id?: string | null
           role?: string
         }
         Update: {
@@ -151,9 +243,18 @@ export type Database = {
           created_at?: string
           id?: string
           nombre?: string | null
+          punto_venta_id?: string | null
           role?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
+        ]
       }
       ventas: {
         Row: {
@@ -163,8 +264,10 @@ export type Database = {
           dish_nombre: string
           id: string
           precio_unitario_miles: number
+          punto_venta_id: string
           total_miles: number
           vendedor_id: string | null
+          vendedor_nombre: string | null
         }
         Insert: {
           cantidad: number
@@ -173,8 +276,10 @@ export type Database = {
           dish_nombre: string
           id?: string
           precio_unitario_miles: number
+          punto_venta_id: string
           total_miles: number
           vendedor_id?: string | null
+          vendedor_nombre?: string | null
         }
         Update: {
           cantidad?: number
@@ -183,8 +288,10 @@ export type Database = {
           dish_nombre?: string
           id?: string
           precio_unitario_miles?: number
+          punto_venta_id?: string
           total_miles?: number
           vendedor_id?: string | null
+          vendedor_nombre?: string | null
         }
         Relationships: [
           {
@@ -192,6 +299,13 @@ export type Database = {
             columns: ['vendedor_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'ventas_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
             referencedColumns: ['id']
           },
         ]
@@ -202,6 +316,7 @@ export type Database = {
     }
     Functions: {
       current_role_is: { Args: { required: string[] }; Returns: boolean }
+      restock_item: { Args: { p_item_id: string; p_cantidad: number; p_nota?: string | null }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

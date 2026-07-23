@@ -4,6 +4,8 @@ interface Profile {
   role: string
   nombre: string | null
   avatar_url: string | null
+  punto_venta_id: string | null
+  puntos_venta: { nombre: string } | null
 }
 
 export const useProfile = () => {
@@ -21,7 +23,7 @@ export const useProfile = () => {
     loading.value = true
     const { data, error } = await client
       .from('profiles')
-      .select('role, nombre, avatar_url')
+      .select('role, nombre, avatar_url, punto_venta_id, puntos_venta(nombre)')
       .eq('id', user.value.sub)
       .single()
     if (error) console.error('[useProfile] No se pudo cargar el perfil:', error.message)
@@ -56,6 +58,7 @@ export const useProfile = () => {
   const role = computed(() => profile.value?.role ?? null)
   const isAdmin = computed(() => role.value === 'administrador')
   const isStaff = computed(() => role.value === 'vendedor' || role.value === 'administrador')
+  const puntoVentaNombre = computed(() => profile.value?.puntos_venta?.nombre ?? null)
 
-  return { profile, role, isAdmin, isStaff, loading, fetchProfile, updateNombre, uploadAvatar }
+  return { profile, role, isAdmin, isStaff, puntoVentaNombre, loading, fetchProfile, updateNombre, uploadAvatar }
 }

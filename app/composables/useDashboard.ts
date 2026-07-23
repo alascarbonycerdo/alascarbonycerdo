@@ -46,11 +46,11 @@ export const useDashboard = () => {
     await refresh()
   }
 
-  const setConsumption = async (dishId: string, consumptionPerSale: number) => {
-    await $fetch(`/api/dashboard/inventory/${dishId}`, {
-      method: 'PATCH',
-      body: { consumptionPerSale },
-    })
+  const updateInventoryConfig = async (
+    itemId: string,
+    patch: { dishId?: string; consumptionPerSale?: number; unitsPerPackage?: number },
+  ) => {
+    await $fetch(`/api/dashboard/inventory/${itemId}`, { method: 'PATCH', body: patch })
     await refresh()
   }
 
@@ -61,7 +61,11 @@ export const useDashboard = () => {
   const todayItemsSold = computed(() => todaySales.value.reduce((sum, sale) => sum + sale.qty, 0))
 
   const lowStockCount = computed(
-    () => inventory.value.filter((item) => item.currentStock < item.consumptionPerSale).length,
+    () =>
+      inventory.value.filter((item) => {
+        const minConsumption = Math.min(...item.dishes.map((d) => d.consumptionPerSale), Infinity)
+        return Number.isFinite(minConsumption) && item.currentStock < minConsumption
+      }).length,
   )
 
   return {
@@ -74,7 +78,7 @@ export const useDashboard = () => {
     refresh,
     registerSale,
     addStock,
-    setConsumption,
+    updateInventoryConfig,
     todayRevenueThousands,
     todayItemsSold,
     lowStockCount,
