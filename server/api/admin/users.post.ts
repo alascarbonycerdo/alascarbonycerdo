@@ -5,7 +5,13 @@ const VALID_ROLES = ['cliente', 'vendedor', 'administrador']
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
 
-  const body = await readBody<{ email: string; password: string; nombre?: string; role?: string }>(event)
+  const body = await readBody<{
+    email: string
+    password: string
+    nombre?: string
+    role?: string
+    puntoVentaId?: string | null
+  }>(event)
 
   if (!body.email || !body.password) {
     throw createError({ statusCode: 400, statusMessage: 'Correo y contraseña son obligatorios' })
@@ -33,9 +39,12 @@ export default defineEventHandler(async (event) => {
   }
 
   // El trigger on_auth_user_created ya creó el perfil con role='vendedor' por defecto.
-  if (role !== 'vendedor') {
-    const { error: roleError } = await serviceClient.from('profiles').update({ role }).eq('id', data.user.id)
-    if (roleError) throw createError({ statusCode: 500, statusMessage: roleError.message })
+  if (role !== 'vendedor' || body.puntoVentaId !== undefined) {
+    const patch: { role?: string; punto_venta_id?: string | null } = {}
+    if (role !== 'vendedor') patch.role = role
+    if (body.puntoVentaId !== undefined) patch.punto_venta_id = body.puntoVentaId
+    const { error: patchError } = await serviceClient.from('profiles').update(patch).eq('id', data.user.id)
+    if (patchError) throw createError({ statusCode: 500, statusMessage: patchError.message })
   }
 
   return { id: data.user.id, email: data.user.email, role }

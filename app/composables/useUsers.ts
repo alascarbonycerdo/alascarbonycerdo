@@ -5,6 +5,15 @@ export interface CreateUserPayload {
   password: string
   nombre?: string
   role: string
+  puntoVentaId?: string | null
+}
+
+export interface UpdateUserPayload {
+  nombre?: string
+  role?: string
+  email?: string
+  password?: string
+  puntoVentaId?: string | null
 }
 
 export const useUsers = () => {
@@ -32,10 +41,15 @@ export const useUsers = () => {
     await load()
   }
 
-  const updateRole = async (id: string, role: string) => {
-    await $fetch(`/api/admin/users/${id}`, { method: 'PATCH', body: { role } })
+  const updateUser = async (id: string, payload: UpdateUserPayload) => {
+    await $fetch(`/api/admin/users/${id}`, { method: 'PATCH', body: payload })
     await load()
   }
 
-  return { users, pending, error, load, createUser, updateRole }
+  const deleteUser = async (id: string) => {
+    await $fetch(`/api/admin/users/${id}`, { method: 'DELETE' })
+    await load()
+  }
+
+  return { users, pending, error, load, createUser, updateUser, deleteUser }
 }

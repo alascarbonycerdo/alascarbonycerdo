@@ -4,4 +4,6 @@ export interface StaffUser {
   nombre: string | null
   role: string
   createdAt: string
+  puntoVentaId: string | null
+  puntoVentaNombre: string | null
 }

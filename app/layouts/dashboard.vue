@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { profile, isAdmin } = useProfile()
+const { profile, isAdmin, puntoVentaNombre } = useProfile()
 </script>
 
 <template>
@@ -10,6 +10,7 @@ const { profile, isAdmin } = useProfile()
           <p class="font-display text-2xl text-gold">Dashboard</p>
           <p class="text-xs uppercase tracking-widest text-ember-soft">
             {{ profile?.nombre ?? 'Alas Carbón &amp; Cerdo' }} · {{ profile?.role }}
+            <span v-if="puntoVentaNombre"> · {{ puntoVentaNombre }}</span>
           </p>
         </div>
         <NuxtLink to="/dashboard/perfil" aria-label="Mi perfil">
