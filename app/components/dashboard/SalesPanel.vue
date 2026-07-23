@@ -70,7 +70,10 @@ const sortedSales = computed(() => [...todaySales.value].sort((a, b) => b.time.l
       <ul v-else class="divide-y divide-gold/10 overflow-hidden rounded-2xl bg-ink-soft/40 ring-1 ring-gold/10">
         <li v-for="sale in sortedSales" :key="sale.id" class="flex items-center justify-between px-4 py-2.5 text-sm">
           <span class="text-gold-soft/60">{{ sale.time }}</span>
-          <span class="flex-1 px-3 text-gold-soft">{{ sale.qty }} x {{ sale.dishName }}</span>
+          <span class="flex-1 px-3">
+            <span class="text-gold-soft">{{ sale.qty }} x {{ sale.dishName }}</span>
+            <span v-if="sale.vendedorNombre" class="block text-[0.65rem] text-gold-soft/50">{{ sale.vendedorNombre }}</span>
+          </span>
           <span class="font-semibold text-gold">{{ formatCurrency(sale.totalThousands) }}</span>
         </li>
       </ul>
