@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     { data: puntos, error: puntosError },
   ] = await Promise.all([
     serviceClient.auth.admin.listUsers(),
-    serviceClient.from('profiles').select('id, role, nombre, punto_venta_id'),
+    serviceClient.from('profiles').select('id, role, nombre, punto_venta_id, activo, celular, documento, tipo_sangre'),
     serviceClient.from('puntos_venta').select('id, nombre'),
   ])
 
@@ -33,6 +33,10 @@ export default defineEventHandler(async (event) => {
       createdAt: user.created_at,
       puntoVentaId: profile?.punto_venta_id ?? null,
       puntoVentaNombre: profile?.punto_venta_id ? (puntoNombreById.get(profile.punto_venta_id) ?? null) : null,
+      activo: profile?.activo ?? true,
+      celular: profile?.celular ?? null,
+      documento: profile?.documento ?? null,
+      tipoSangre: profile?.tipo_sangre ?? null,
     }
   })
 

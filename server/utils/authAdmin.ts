@@ -8,9 +8,9 @@ export async function requireAdmin(event: H3Event) {
   }
 
   const client = await serverSupabaseClient(event)
-  const { data, error } = await client.from('profiles').select('role').eq('id', user.sub).single()
+  const { data, error } = await client.from('profiles').select('role, activo').eq('id', user.sub).single()
 
-  if (error || data?.role !== 'administrador') {
+  if (error || data?.role !== 'administrador' || data?.activo === false) {
     throw createError({ statusCode: 403, statusMessage: 'Solo un administrador puede hacer esto' })
   }
 
