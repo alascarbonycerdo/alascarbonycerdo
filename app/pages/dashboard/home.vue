@@ -42,6 +42,17 @@ const { isAdmin } = useProfile()
     </NuxtLink>
 
     <NuxtLink
+      to="/dashboard/horarios"
+      class="flex items-center gap-4 rounded-2xl bg-ink-soft/40 p-5 ring-1 ring-gold/10 transition hover:bg-ink-soft/70"
+    >
+      <Icon name="lucide:calendar-clock" class="size-8 shrink-0 text-ember" />
+      <div>
+        <p class="font-display text-lg text-gold">Horarios</p>
+        <p class="text-xs text-gold-soft/60">Turnos laborales y horas trabajadas</p>
+      </div>
+    </NuxtLink>
+
+    <NuxtLink
       v-if="isAdmin"
       to="/dashboard/costos"
       class="flex items-center gap-4 rounded-2xl bg-ink-soft/40 p-5 ring-1 ring-gold/10 transition hover:bg-ink-soft/70"

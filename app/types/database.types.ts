@@ -232,6 +232,7 @@ export type Database = {
           nombre: string | null
           punto_venta_id: string | null
           role: string
+          tarifa_hora: number
           tipo_sangre: string | null
         }
         Insert: {
@@ -244,6 +245,7 @@ export type Database = {
           nombre?: string | null
           punto_venta_id?: string | null
           role?: string
+          tarifa_hora?: number
           tipo_sangre?: string | null
         }
         Update: {
@@ -256,11 +258,133 @@ export type Database = {
           nombre?: string | null
           punto_venta_id?: string | null
           role?: string
+          tarifa_hora?: number
           tipo_sangre?: string | null
         }
         Relationships: [
           {
             foreignKeyName: 'profiles_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      turnos: {
+        Row: {
+          confirmado_at: string | null
+          confirmado_por: string | null
+          creado_por: string | null
+          created_at: string
+          dia: string
+          empleado_id: string
+          estado: string
+          hora_entrada_programada: string
+          hora_entrada_real: string | null
+          hora_salida_programada: string
+          hora_salida_real: string | null
+          id: string
+          punto_venta_id: string
+        }
+        Insert: {
+          confirmado_at?: string | null
+          confirmado_por?: string | null
+          creado_por?: string | null
+          created_at?: string
+          dia: string
+          empleado_id: string
+          estado?: string
+          hora_entrada_programada: string
+          hora_entrada_real?: string | null
+          hora_salida_programada: string
+          hora_salida_real?: string | null
+          id?: string
+          punto_venta_id: string
+        }
+        Update: {
+          confirmado_at?: string | null
+          confirmado_por?: string | null
+          creado_por?: string | null
+          created_at?: string
+          dia?: string
+          empleado_id?: string
+          estado?: string
+          hora_entrada_programada?: string
+          hora_entrada_real?: string | null
+          hora_salida_programada?: string
+          hora_salida_real?: string | null
+          id?: string
+          punto_venta_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'turnos_empleado_id_fkey'
+            columns: ['empleado_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'turnos_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      horas_trabajadas: {
+        Row: {
+          created_at: string
+          dia: string
+          empleado_id: string
+          horas: number
+          id: string
+          punto_venta_id: string
+          tarifa_hora: number
+          total_pagar: number
+          turno_id: string
+        }
+        Insert: {
+          created_at?: string
+          dia: string
+          empleado_id: string
+          horas: number
+          id?: string
+          punto_venta_id: string
+          tarifa_hora: number
+          total_pagar: number
+          turno_id: string
+        }
+        Update: {
+          created_at?: string
+          dia?: string
+          empleado_id?: string
+          horas?: number
+          id?: string
+          punto_venta_id?: string
+          tarifa_hora?: number
+          total_pagar?: number
+          turno_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'horas_trabajadas_turno_id_fkey'
+            columns: ['turno_id']
+            isOneToOne: true
+            referencedRelation: 'turnos'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'horas_trabajadas_empleado_id_fkey'
+            columns: ['empleado_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'horas_trabajadas_punto_venta_id_fkey'
             columns: ['punto_venta_id']
             isOneToOne: false
             referencedRelation: 'puntos_venta'

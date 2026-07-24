@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BLOOD_TYPES } from '#shared/types/admin'
 import type { StaffUser } from '#shared/types/admin'
+import { formatCurrency } from '#shared/utils/format'
 
 definePageMeta({ middleware: ['staff', 'admin'], layout: 'dashboard' })
 
@@ -25,6 +26,7 @@ const form = reactive({
   celular: '',
   documento: '',
   tipoSangre: '',
+  tarifaHora: '6000',
 })
 const creating = ref(false)
 const createError = ref('')
@@ -39,6 +41,7 @@ const submitCreate = async () => {
       celular: form.celular || undefined,
       documento: form.documento || undefined,
       tipoSangre: form.tipoSangre || undefined,
+      tarifaHora: form.tarifaHora ? Number(form.tarifaHora) : undefined,
     })
     form.email = ''
     form.password = ''
@@ -48,6 +51,7 @@ const submitCreate = async () => {
     form.celular = ''
     form.documento = ''
     form.tipoSangre = ''
+    form.tarifaHora = '6000'
   } catch (e) {
     createError.value = e instanceof Error ? e.message : 'No se pudo crear el usuario'
   } finally {
@@ -67,6 +71,7 @@ const editForm = reactive({
   celular: '',
   documento: '',
   tipoSangre: '',
+  tarifaHora: '',
 })
 const saving = ref(false)
 const editError = ref('')
@@ -81,6 +86,7 @@ const startEdit = (user: StaffUser) => {
   editForm.celular = user.celular ?? ''
   editForm.documento = user.documento ?? ''
   editForm.tipoSangre = user.tipoSangre ?? ''
+  editForm.tarifaHora = user.tarifaHora ? String(user.tarifaHora) : ''
   editError.value = ''
 }
 
@@ -101,6 +107,7 @@ const saveEdit = async (id: string) => {
       celular: editForm.celular,
       documento: editForm.documento,
       tipoSangre: editForm.tipoSangre,
+      tarifaHora: editForm.tarifaHora ? Number(editForm.tarifaHora) : 0,
     })
     editingId.value = null
   } catch (e) {
@@ -227,6 +234,18 @@ const toggleActivo = async (user: StaffUser) => {
           </select>
         </label>
 
+        <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+          Tarifa por hora (opcional)
+          <input
+            v-model="form.tarifaHora"
+            type="number"
+            min="0"
+            step="500"
+            placeholder="Pesos por hora"
+            class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+          >
+        </label>
+
         <div class="sm:col-span-2">
           <p v-if="createError" class="mb-2 text-xs text-ember-soft">{{ createError }}</p>
           <button
@@ -275,6 +294,7 @@ const toggleActivo = async (user: StaffUser) => {
                 <span v-if="user.documento"> · CC {{ user.documento }}</span>
                 <span v-if="user.tipoSangre"> · Tipo {{ user.tipoSangre }}</span>
               </p>
+              <p v-if="user.tarifaHora" class="text-xs text-gold-soft/50">{{ formatCurrency(user.tarifaHora) }} / hora</p>
             </div>
 
             <div class="flex items-center gap-1.5">
@@ -408,6 +428,18 @@ const toggleActivo = async (user: StaffUser) => {
                 <option value="">Sin especificar</option>
                 <option v-for="bt in BLOOD_TYPES" :key="bt" :value="bt">{{ bt }}</option>
               </select>
+            </label>
+
+            <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
+              Tarifa por hora
+              <input
+                v-model="editForm.tarifaHora"
+                type="number"
+                min="0"
+                step="500"
+                placeholder="Pesos por hora"
+                class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50"
+              >
             </label>
 
             <div class="sm:col-span-2">

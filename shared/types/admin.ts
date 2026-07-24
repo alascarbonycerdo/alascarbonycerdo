@@ -13,4 +13,5 @@ export interface StaffUser {
   celular: string | null
   documento: string | null
   tipoSangre: string | null
+  tarifaHora: number
 }

@@ -67,7 +67,17 @@
       "Bash(curl -s -o /dev/null -w \"login: HTTP %{http_code}\\\\n\" http://localhost:3311/login)",
       "Bash(grep -n \"policyname\\\\|tablename\" -A2 /dev/null; echo done)",
       "Read(//dev/**)",
-      "Bash(curl -s http://localhost:3311/api/admin/users -o /tmp/users_resp.json -w \"users api no-auth: HTTP %{http_code}\\\\n\")"
+      "Bash(curl -s http://localhost:3311/api/admin/users -o /tmp/users_resp.json -w \"users api no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"horarios: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/horarios)",
+      "Bash(curl -s http://localhost:3311/api/dashboard/turnos -o /tmp/turnos_resp.json -w \"turnos api no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:3311/api/admin/turnos -H \"Content-Type: application/json\" -d '{}' -o /tmp/turnos_post.json -w \"turnos post no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3311/api/admin/turnos/resumen -o /tmp/resumen_resp.json -w \"resumen no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -X PATCH http://localhost:3311/api/admin/turnos/fake-id -H \"Content-Type: application/json\" -d '{}' -o /dev/null -w \"patch no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -X DELETE http://localhost:3311/api/admin/turnos/fake-id -o /dev/null -w \"delete no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3311/api/dashboard/turnos -o /dev/null -w \"turnos: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"horarios page: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/horarios)",
+      "Bash(curl -s -o /dev/null -w \"usuarios page: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/usuarios)",
+      "Bash(curl -s http://localhost:3311/api/admin/turnos/resumen -o /dev/null -w \"resumen no-auth: HTTP %{http_code}\\\\n\")"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",

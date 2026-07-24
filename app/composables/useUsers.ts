@@ -9,6 +9,7 @@ export interface CreateUserPayload {
   celular?: string
   documento?: string
   tipoSangre?: string
+  tarifaHora?: number
 }
 
 export interface UpdateUserPayload {
@@ -21,6 +22,7 @@ export interface UpdateUserPayload {
   celular?: string
   documento?: string
   tipoSangre?: string
+  tarifaHora?: number
 }
 
 export const useUsers = () => {

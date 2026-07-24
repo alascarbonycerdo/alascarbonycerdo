@@ -13,6 +13,7 @@ interface UpdateUserBody {
   celular?: string
   documento?: string
   tipoSangre?: string
+  tarifaHora?: number
 }
 
 export default defineEventHandler(async (event) => {
@@ -32,6 +33,9 @@ export default defineEventHandler(async (event) => {
   }
   if (body.tipoSangre && !BLOOD_TYPES.includes(body.tipoSangre as (typeof BLOOD_TYPES)[number])) {
     throw createError({ statusCode: 400, statusMessage: 'Tipo de sangre inválido' })
+  }
+  if (body.tarifaHora !== undefined && body.tarifaHora < 0) {
+    throw createError({ statusCode: 400, statusMessage: 'La tarifa por hora no puede ser negativa' })
   }
 
   // Correo y contraseña viven en auth.users: solo la Admin API (service role) puede tocarlos.
@@ -57,10 +61,11 @@ export default defineEventHandler(async (event) => {
     body.activo !== undefined ||
     body.celular !== undefined ||
     body.documento !== undefined ||
-    body.tipoSangre !== undefined
+    body.tipoSangre !== undefined ||
+    body.tarifaHora !== undefined
   ) {
     const client = await serverSupabaseClient(event)
-    const patch: Record<string, string | boolean | null> = {}
+    const patch: Record<string, string | boolean | number | null> = {}
     if (body.nombre !== undefined) patch.nombre = body.nombre
     if (body.role) patch.role = body.role
     if (body.puntoVentaId !== undefined) patch.punto_venta_id = body.puntoVentaId
@@ -68,6 +73,7 @@ export default defineEventHandler(async (event) => {
     if (body.celular !== undefined) patch.celular = body.celular
     if (body.documento !== undefined) patch.documento = body.documento
     if (body.tipoSangre !== undefined) patch.tipo_sangre = body.tipoSangre
+    if (body.tarifaHora !== undefined) patch.tarifa_hora = body.tarifaHora
 
     const { error } = await client.from('profiles').update(patch).eq('id', id)
     if (error) throw createError({ statusCode: 500, statusMessage: error.message })
