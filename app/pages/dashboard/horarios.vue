@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatCurrency } from '#shared/utils/format'
+import { formatDia, formatHora } from '#shared/utils/horario'
 import type { ResumenPagoEmpleado, Turno } from '#shared/types/horario'
 
 definePageMeta({ middleware: ['staff'], layout: 'dashboard' })
@@ -7,19 +8,7 @@ definePageMeta({ middleware: ['staff'], layout: 'dashboard' })
 const { isAdmin } = useProfile()
 const currentUser = useSupabaseUser()
 
-const {
-  turnos,
-  pending,
-  error,
-  load,
-  createTurno,
-  confirmTurno,
-  deleteTurno,
-  resumen,
-  resumenPending,
-  resumenError,
-  loadResumen,
-} = useHorarios()
+const { turnos, pending, error, load, createTurno, resumen, resumenPending, resumenError, loadResumen } = useHorarios()
 const { users, load: loadUsers, updateUser } = useUsers()
 const { activePuntos, load: loadPuntos } = usePuntosVenta()
 
@@ -70,86 +59,15 @@ const submitCreate = async () => {
   }
 }
 
-const formatDia = (iso: string) => {
-  const [year = 1970, month = 1, day = 1] = iso.split('-').map(Number)
-  const asUtc = new Date(Date.UTC(year, month - 1, day))
-  return new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(asUtc)
-}
-
-const formatHora = (time: string) => time.slice(0, 5)
-
-const horasEntreHoras = (entrada: string, salida: string) => {
-  const [eh = 0, em = 0] = entrada.split(':').map(Number)
-  const [sh = 0, sm = 0] = salida.split(':').map(Number)
-  let horas = sh + sm / 60 - (eh + em / 60)
-  if (horas < 0) horas += 24
-  return horas
-}
-
-const entradaReal = reactive<Record<string, string>>({})
-const salidaReal = reactive<Record<string, string>>({})
-
-// Precarga los campos de hora real con la hora programada al crear el turno (o
-// con la hora real ya guardada, si el turno ya fue confirmado antes), así el
-// admin no tiene que escribir desde cero si el turno salió como se planeó.
-watch(
-  turnos,
-  (list: Turno[]) => {
-    for (const t of list) {
-      if (entradaReal[t.id] === undefined) {
-        entradaReal[t.id] = formatHora(t.horaEntradaReal ?? t.horaEntradaProgramada)
-      }
-      if (salidaReal[t.id] === undefined) {
-        salidaReal[t.id] = formatHora(t.horaSalidaReal ?? t.horaSalidaProgramada)
-      }
-    }
-  },
-  { immediate: true },
+// Pendientes: los que todavía no se confirmaron, ordenados por día más cercano
+// primero (ya vienen así de la API). Historial: los ya confirmados, más
+// recientes primero — mismo criterio que el historial de ventas.
+const turnosPendientes = computed(() => turnos.value.filter((t: Turno) => t.estado === 'programado'))
+const turnosConfirmados = computed(() =>
+  [...turnos.value]
+    .filter((t: Turno) => t.estado === 'confirmado')
+    .sort((a: Turno, b: Turno) => b.dia.localeCompare(a.dia) || b.horaEntradaProgramada.localeCompare(a.horaEntradaProgramada)),
 )
-
-const editingTurnoId = ref<string | null>(null)
-const toggleEditTurno = (id: string) => {
-  editingTurnoId.value = editingTurnoId.value === id ? null : id
-}
-
-const confirmingId = ref<string | null>(null)
-const confirmError = ref('')
-
-const submitConfirm = async (turno: Turno) => {
-  const entrada = entradaReal[turno.id]
-  const salida = salidaReal[turno.id]
-  if (!entrada || !salida) return
-  const mensaje =
-    turno.estado === 'confirmado'
-      ? `¿Guardar los cambios de este turno ya confirmado?`
-      : `¿Confirmar el turno de ${turno.empleadoNombre} el ${formatDia(turno.dia)}?`
-  if (!confirm(mensaje)) return
-  confirmError.value = ''
-  confirmingId.value = turno.id
-  try {
-    await confirmTurno(turno.id, entrada, salida)
-  } catch (e) {
-    confirmError.value = e instanceof Error ? e.message : 'No se pudo guardar el turno'
-  } finally {
-    confirmingId.value = null
-  }
-}
-
-const deletingId = ref<string | null>(null)
-const deleteError = ref('')
-
-const removeTurno = async (turno: Turno) => {
-  if (!confirm(`¿Eliminar el turno de ${turno.empleadoNombre} el ${formatDia(turno.dia)}?`)) return
-  deleteError.value = ''
-  deletingId.value = turno.id
-  try {
-    await deleteTurno(turno.id)
-  } catch (e) {
-    deleteError.value = e instanceof Error ? e.message : 'No se pudo eliminar el turno'
-  } finally {
-    deletingId.value = null
-  }
-}
 
 const misTurnos = computed(() => turnos.value.filter((t) => t.empleadoId === currentUser.value?.sub))
 
@@ -262,102 +180,25 @@ const saveTarifa = async (empleadoId: string) => {
         <h2 class="font-display text-2xl text-gold">Turnos</h2>
 
         <p v-if="error" class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">{{ error }}</p>
-        <p v-if="confirmError" class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">{{ confirmError }}</p>
-        <p v-if="deleteError" class="rounded-xl bg-ember/10 px-4 py-3 text-sm text-ember-soft">{{ deleteError }}</p>
 
         <div class="space-y-2" :class="{ 'opacity-60': pending }">
-          <div
-            v-for="turno in turnos"
-            :key="turno.id"
-            class="space-y-3 rounded-2xl bg-ink-soft/40 p-4 ring-1 ring-gold/10"
-          >
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="flex items-center gap-2 text-sm font-semibold text-gold-soft">
-                  {{ turno.empleadoNombre }}
-                  <span
-                    class="rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide"
-                    :class="turno.estado === 'confirmado' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-ember/15 text-ember-soft'"
-                  >
-                    {{ turno.estado === 'confirmado' ? 'Confirmado' : 'Programado' }}
-                  </span>
-                </p>
-                <p class="text-sm text-gold-soft/70">
-                  {{ formatDia(turno.dia) }} · {{ turno.puntoVentaNombre }} ·
-                  {{ formatHora(turno.horaEntradaProgramada) }}–{{ formatHora(turno.horaSalidaProgramada) }} programado
-                </p>
-              </div>
+          <TurnoCard v-for="turno in turnosPendientes" :key="turno.id" :turno="turno" />
 
-              <div class="flex items-center gap-1.5">
-                <div class="group relative">
-                  <button
-                    type="button"
-                    class="flex size-8 items-center justify-center rounded-lg text-gold-soft/70 transition hover:bg-ink hover:text-gold"
-                    @click="toggleEditTurno(turno.id)"
-                  >
-                    <Icon name="lucide:pencil" class="size-4" />
-                  </button>
-                  <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[0.65rem] text-gold-soft opacity-0 ring-1 ring-gold/20 transition group-hover:opacity-100">
-                    {{ editingTurnoId === turno.id ? 'Cerrar' : 'Editar' }}
-                  </span>
-                </div>
+          <p v-if="!pending && !turnosPendientes.length" class="text-sm text-gold-soft/50">
+            No hay turnos programados por confirmar.
+          </p>
+        </div>
+      </section>
 
-                <button
-                  type="button"
-                  :disabled="deletingId === turno.id"
-                  class="relative flex size-8 items-center justify-center rounded-lg text-ember-soft/80 transition hover:bg-ember/10 hover:text-ember disabled:opacity-40"
-                  @click="removeTurno(turno)"
-                >
-                  <Icon name="lucide:trash-2" class="size-4" :class="{ invisible: deletingId === turno.id }" />
-                  <span
-                    v-if="deletingId === turno.id"
-                    class="absolute size-3.5 animate-spin rounded-full border-2 border-ember-soft/30 border-t-ember"
-                  />
-                </button>
-              </div>
-            </div>
+      <section class="space-y-3">
+        <h2 class="font-display text-2xl text-gold">Historial</h2>
 
-            <div v-if="editingTurnoId === turno.id" class="grid gap-3 border-t border-gold/10 pt-3 sm:grid-cols-3">
-              <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
-                Hora entrada real
-                <input
-                  v-model="entradaReal[turno.id]"
-                  type="time"
-                  class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50 [color-scheme:dark]"
-                >
-              </label>
-              <label class="flex flex-col gap-1 text-[0.65rem] uppercase tracking-widest text-gold-soft/60">
-                Hora salida real
-                <input
-                  v-model="salidaReal[turno.id]"
-                  type="time"
-                  class="rounded-lg bg-ink px-2 py-1.5 text-sm text-gold-soft ring-1 ring-gold/20 focus:outline-none focus:ring-gold/50 [color-scheme:dark]"
-                >
-              </label>
-              <div class="flex items-end">
-                <button
-                  type="button"
-                  :disabled="!entradaReal[turno.id] || !salidaReal[turno.id] || confirmingId === turno.id"
-                  class="w-full rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-gold-soft disabled:opacity-30"
-                  @click="submitConfirm(turno)"
-                >
-                  {{
-                    confirmingId === turno.id
-                      ? 'Guardando…'
-                      : turno.estado === 'confirmado'
-                        ? 'Guardar cambios'
-                        : 'Confirmar turno'
-                  }}
-                </button>
-              </div>
-            </div>
+        <div class="space-y-2" :class="{ 'opacity-60': pending }">
+          <TurnoCard v-for="turno in turnosConfirmados" :key="turno.id" :turno="turno" />
 
-            <p v-if="turno.estado === 'confirmado'" class="text-xs text-gold-soft/50">
-              {{ horasEntreHoras(turno.horaEntradaReal!, turno.horaSalidaReal!).toFixed(1) }} horas trabajadas
-            </p>
-          </div>
-
-          <p v-if="!pending && !turnos.length" class="text-sm text-gold-soft/50">No hay turnos creados todavía.</p>
+          <p v-if="!pending && !turnosConfirmados.length" class="text-sm text-gold-soft/50">
+            Todavía no hay turnos confirmados.
+          </p>
         </div>
       </section>
 
