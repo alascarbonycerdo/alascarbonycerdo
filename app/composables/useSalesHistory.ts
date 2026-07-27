@@ -29,5 +29,10 @@ export const useSalesHistory = () => {
     await load()
   }
 
-  return { date, sales, pending, error, load, removeSale }
+  const addBackdatedSale = async (dishId: string, qty: number, fecha: string) => {
+    await $fetch('/api/admin/sales', { method: 'POST', body: { dishId, qty, fecha } })
+    await load()
+  }
+
+  return { date, sales, pending, error, load, removeSale, addBackdatedSale }
 }

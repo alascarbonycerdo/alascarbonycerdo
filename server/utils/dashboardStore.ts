@@ -303,7 +303,12 @@ export async function updateInventoryConfig(
   return toInventoryItem(data, dishes, stock)
 }
 
-export async function recordSale(event: H3Event, dishId: string, qty: number): Promise<{ sale: SaleRecord; inventory: InventoryItem }> {
+export async function recordSale(
+  event: H3Event,
+  dishId: string,
+  qty: number,
+  fecha?: string,
+): Promise<{ sale: SaleRecord; inventory: InventoryItem }> {
   if (qty <= 0) {
     throw createError({ statusCode: 400, statusMessage: 'La cantidad debe ser mayor a 0' })
   }
@@ -311,6 +316,13 @@ export async function recordSale(event: H3Event, dishId: string, qty: number): P
   const dish = catalog.find((entry) => entry.id === dishId)
   if (!dish) {
     throw createError({ statusCode: 404, statusMessage: 'Plato no encontrado' })
+  }
+
+  if (fecha) {
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(new Date())
+    if (fecha > today) {
+      throw createError({ statusCode: 400, statusMessage: 'No puedes registrar una venta en una fecha futura' })
+    }
   }
 
   const client = await serverSupabaseClient(event)
@@ -334,6 +346,9 @@ export async function recordSale(event: H3Event, dishId: string, qty: number): P
       vendedor_id: user?.sub,
       vendedor_nombre: vendedorNombre,
       punto_venta_id: puntoVentaId,
+      // Solo se manda si se está registrando una venta atrasada (historial); en el
+      // flujo normal se omite y la base de datos usa now() por defecto.
+      ...(fecha ? { created_at: new Date(`${fecha}T12:00:00-05:00`).toISOString() } : {}),
     })
     .select()
     .single()

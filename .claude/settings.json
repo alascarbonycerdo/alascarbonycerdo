@@ -81,7 +81,18 @@
       "Bash(curl -s http://localhost:3311/api/dashboard/turnos -o /dev/null -w \"turnos api: HTTP %{http_code}\\\\n\")",
       "Bash(curl -s -o /dev/null -w \"perfil: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/perfil)",
       "Bash(curl -s -D - -o /dev/null http://localhost:3311/)",
-      "Bash(curl -s -o /dev/null -w \"api inventory: HTTP %{http_code}\\\\n\" http://localhost:3311/api/dashboard/inventory)"
+      "Bash(curl -s -o /dev/null -w \"api inventory: HTTP %{http_code}\\\\n\" http://localhost:3311/api/dashboard/inventory)",
+      "Bash(curl -s -X POST http://localhost:3311/api/admin/sales -H \"Content-Type: application/json\" -d '{}' -o /tmp/sales_backdate.json -w \"admin sales post no-auth: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"facturas page: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/facturas)",
+      "Bash(curl -s http://localhost:3311/api/admin/facturas -o /dev/null -w \"facturas api: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3311/api/admin/facturas/resumen -o /dev/null -w \"resumen api: HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3311/ --max-time 3)",
+      "Bash(disown)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3311/ --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"home: %{http_code}\\\\n\" http://localhost:3311/ --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"facturas api \\(no auth\\): %{http_code}\\\\n\" http://localhost:3311/api/admin/facturas --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"facturas resumen \\(no auth\\): %{http_code}\\\\n\" http://localhost:3311/api/admin/facturas/resumen --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"dashboard/facturas page: %{http_code}\\\\n\" http://localhost:3311/dashboard/facturas --max-time 5)"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",
