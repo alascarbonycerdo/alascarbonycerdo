@@ -36,6 +36,19 @@ export default defineNuxtConfig({
     },
   },
 
+  routeRules: {
+    // Menú público: mismo HTML para cualquier visitante (no hay sesión ni datos
+    // por usuario), así que se sirve desde el edge de Netlify y se revalida en
+    // segundo plano cada hora en vez de renderizar en cada visita.
+    '/': { isr: 3600 },
+
+    // Dashboard y API: contenido autenticado y distinto por usuario/rol — nunca
+    // se debe cachear, o un vendedor podría terminar viendo la respuesta cacheada
+    // de otro.
+    '/dashboard/**': { cache: false },
+    '/api/**': { cache: false },
+  },
+
   app: {
     head: {
       htmlAttrs: { lang: 'es' },

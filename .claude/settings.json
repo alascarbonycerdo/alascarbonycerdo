@@ -79,7 +79,9 @@
       "Bash(curl -s -o /dev/null -w \"usuarios page: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/usuarios)",
       "Bash(curl -s http://localhost:3311/api/admin/turnos/resumen -o /dev/null -w \"resumen no-auth: HTTP %{http_code}\\\\n\")",
       "Bash(curl -s http://localhost:3311/api/dashboard/turnos -o /dev/null -w \"turnos api: HTTP %{http_code}\\\\n\")",
-      "Bash(curl -s -o /dev/null -w \"perfil: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/perfil)"
+      "Bash(curl -s -o /dev/null -w \"perfil: HTTP %{http_code}\\\\n\" http://localhost:3311/dashboard/perfil)",
+      "Bash(curl -s -D - -o /dev/null http://localhost:3311/)",
+      "Bash(curl -s -o /dev/null -w \"api inventory: HTTP %{http_code}\\\\n\" http://localhost:3311/api/dashboard/inventory)"
     ],
     "additionalDirectories": [
       "/home/usurio/Documentos/Nuxt/alascarbonycerdo/supabase",
