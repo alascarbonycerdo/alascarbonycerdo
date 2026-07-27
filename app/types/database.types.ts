@@ -271,6 +271,51 @@ export type Database = {
           },
         ]
       }
+      facturas_compra: {
+        Row: {
+          creado_por: string | null
+          created_at: string
+          descripcion: string
+          fecha: string
+          id: string
+          punto_venta_id: string | null
+          valor: number
+        }
+        Insert: {
+          creado_por?: string | null
+          created_at?: string
+          descripcion: string
+          fecha: string
+          id?: string
+          punto_venta_id?: string | null
+          valor: number
+        }
+        Update: {
+          creado_por?: string | null
+          created_at?: string
+          descripcion?: string
+          fecha?: string
+          id?: string
+          punto_venta_id?: string | null
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'facturas_compra_punto_venta_id_fkey'
+            columns: ['punto_venta_id']
+            isOneToOne: false
+            referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'facturas_compra_creado_por_fkey'
+            columns: ['creado_por']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       turnos: {
         Row: {
           confirmado_at: string | null

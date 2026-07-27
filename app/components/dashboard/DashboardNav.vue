@@ -56,6 +56,16 @@ const isActive = (path: string) => route.path === path
       </NuxtLink>
 
       <NuxtLink
+        v-if="isAdmin"
+        to="/dashboard/facturas"
+        class="flex flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-xs font-medium transition"
+        :class="isActive('/dashboard/facturas') ? 'text-gold' : 'text-gold-soft/60 hover:text-gold-soft'"
+      >
+        <Icon name="lucide:receipt" class="size-5" />
+        Facturas
+      </NuxtLink>
+
+      <NuxtLink
         to="/"
         class="flex flex-col items-center gap-1 rounded-xl px-4 py-1.5 text-xs font-medium text-gold-soft/60 transition hover:text-gold-soft"
       >
