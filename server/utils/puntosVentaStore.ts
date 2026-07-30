@@ -16,17 +16,17 @@ export async function listPuntosVenta(event: H3Event): Promise<PuntoVentaSummary
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(new Date())
   const { start, end } = bogotaDayRangeUtc(today)
 
-  const [puntosRes, profilesRes, salesRes, stockRes, mapRes] = await Promise.all([
+  const [puntosRes, profilesRes, pedidosRes, stockRes, mapRes] = await Promise.all([
     client.from('puntos_venta').select('*').order('created_at'),
     client.from('profiles').select('punto_venta_id').not('punto_venta_id', 'is', null),
-    client.from('ventas').select('punto_venta_id, total_miles').gte('created_at', start).lt('created_at', end),
+    client.from('pedidos').select('punto_venta_id, total_miles').gte('created_at', start).lt('created_at', end),
     client.from('inventario_stock').select('item_id, punto_venta_id, stock_actual'),
     client.from('dish_inventory_map').select('inventario_item_id, consumo_por_venta'),
   ])
 
   if (puntosRes.error) throw createError({ statusCode: 500, statusMessage: puntosRes.error.message })
   if (profilesRes.error) throw createError({ statusCode: 500, statusMessage: profilesRes.error.message })
-  if (salesRes.error) throw createError({ statusCode: 500, statusMessage: salesRes.error.message })
+  if (pedidosRes.error) throw createError({ statusCode: 500, statusMessage: pedidosRes.error.message })
   if (stockRes.error) throw createError({ statusCode: 500, statusMessage: stockRes.error.message })
   if (mapRes.error) throw createError({ statusCode: 500, statusMessage: mapRes.error.message })
 
@@ -37,8 +37,8 @@ export async function listPuntosVenta(event: H3Event): Promise<PuntoVentaSummary
   }
 
   const revenueByPoint = new Map<string, number>()
-  for (const sale of salesRes.data ?? []) {
-    revenueByPoint.set(sale.punto_venta_id, (revenueByPoint.get(sale.punto_venta_id) ?? 0) + sale.total_miles)
+  for (const pedido of pedidosRes.data ?? []) {
+    revenueByPoint.set(pedido.punto_venta_id, (revenueByPoint.get(pedido.punto_venta_id) ?? 0) + pedido.total_miles)
   }
 
   // Umbral de "stock bajo" por insumo: la menor cantidad que consume cualquiera de

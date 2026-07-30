@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { serverSupabaseClient, serverSupabaseUser } from '#supabase/server'
 import { porkItems, wingsCombos } from '#shared/utils/menu'
-import type { DaySummary, InventoryDishUsage, InventoryItem, Movement, SaleRecord } from '#shared/types/dashboard'
+import type { DaySummary, InventoryDishUsage, InventoryItem, Movement } from '#shared/types/dashboard'
 
 const TIME_ZONE = 'America/Bogota'
 
@@ -34,7 +34,7 @@ function dayLabel(date: string) {
 // salvo que sea administrador y haya pedido explícitamente ver otro punto (override,
 // usado por la pantalla de gestión de puntos de venta). Las rutas de escritura nunca
 // pasan override, así que siempre quedan ancladas al punto propio del que vende.
-async function resolvePuntoVentaId(event: H3Event, override?: string): Promise<string> {
+export async function resolvePuntoVentaId(event: H3Event, override?: string): Promise<string> {
   const client = await serverSupabaseClient(event)
   const user = await serverSupabaseUser(event)
   if (!user) throw createError({ statusCode: 401, statusMessage: 'No autenticado' })
@@ -125,30 +125,6 @@ function toMovement(row: {
   }
 }
 
-function toSaleRecord(row: {
-  id: string
-  dish_id: string
-  dish_nombre: string
-  cantidad: number
-  precio_unitario_miles: number
-  total_miles: number
-  created_at: string
-  vendedor_nombre: string | null
-}): SaleRecord {
-  const { date, time } = splitTimestamp(row.created_at)
-  return {
-    id: row.id,
-    date,
-    time,
-    dishId: row.dish_id,
-    dishName: row.dish_nombre,
-    qty: row.cantidad,
-    unitPriceThousands: row.precio_unitario_miles,
-    totalThousands: row.total_miles,
-    vendedorNombre: row.vendedor_nombre ?? undefined,
-  }
-}
-
 export async function getInventory(event: H3Event, override?: string): Promise<InventoryItem[]> {
   const client = await serverSupabaseClient(event)
   const puntoVentaId = await resolvePuntoVentaId(event, override)
@@ -186,18 +162,6 @@ export async function getMovements(event: H3Event, override?: string): Promise<M
     .order('created_at')
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
   return (data ?? []).map(toMovement)
-}
-
-export async function getSales(event: H3Event, override?: string): Promise<SaleRecord[]> {
-  const client = await serverSupabaseClient(event)
-  const puntoVentaId = await resolvePuntoVentaId(event, override)
-  const { data, error } = await client
-    .from('ventas')
-    .select('*')
-    .eq('punto_venta_id', puntoVentaId)
-    .order('created_at')
-  if (error) throw createError({ statusCode: 500, statusMessage: error.message })
-  return (data ?? []).map(toSaleRecord)
 }
 
 export async function restock(event: H3Event, itemId: string, amount: number, note?: string): Promise<InventoryItem> {
@@ -303,92 +267,6 @@ export async function updateInventoryConfig(
   return toInventoryItem(data, dishes, stock)
 }
 
-export async function recordSale(
-  event: H3Event,
-  dishId: string,
-  qty: number,
-  fecha?: string,
-): Promise<{ sale: SaleRecord; inventory: InventoryItem }> {
-  if (qty <= 0) {
-    throw createError({ statusCode: 400, statusMessage: 'La cantidad debe ser mayor a 0' })
-  }
-
-  const dish = catalog.find((entry) => entry.id === dishId)
-  if (!dish) {
-    throw createError({ statusCode: 404, statusMessage: 'Plato no encontrado' })
-  }
-
-  if (fecha) {
-    const today = new Intl.DateTimeFormat('en-CA', { timeZone: TIME_ZONE }).format(new Date())
-    if (fecha > today) {
-      throw createError({ statusCode: 400, statusMessage: 'No puedes registrar una venta en una fecha futura' })
-    }
-  }
-
-  const client = await serverSupabaseClient(event)
-  const user = await serverSupabaseUser(event)
-  const puntoVentaId = await resolvePuntoVentaId(event)
-
-  let vendedorNombre = user?.email ?? null
-  if (user?.sub) {
-    const { data: profile } = await client.from('profiles').select('nombre').eq('id', user.sub).single()
-    if (profile?.nombre) vendedorNombre = profile.nombre
-  }
-
-  const { data: saleRow, error: insertError } = await client
-    .from('ventas')
-    .insert({
-      dish_id: dishId,
-      dish_nombre: dish.name,
-      cantidad: qty,
-      precio_unitario_miles: dish.priceThousands,
-      total_miles: dish.priceThousands * qty,
-      vendedor_id: user?.sub,
-      vendedor_nombre: vendedorNombre,
-      punto_venta_id: puntoVentaId,
-      // Solo se manda si se está registrando una venta atrasada (historial); en el
-      // flujo normal se omite y la base de datos usa now() por defecto.
-      ...(fecha ? { created_at: new Date(`${fecha}T12:00:00-05:00`).toISOString() } : {}),
-    })
-    .select()
-    .single()
-
-  if (insertError || !saleRow) {
-    const statusCode = insertError?.code === '42501' ? 403 : 500
-    throw createError({ statusCode, statusMessage: insertError?.message ?? 'No se pudo registrar la venta' })
-  }
-
-  const { data: mapRow, error: mapError } = await client
-    .from('dish_inventory_map')
-    .select('inventario_item_id')
-    .eq('dish_id', dishId)
-    .maybeSingle()
-  if (mapError) throw createError({ statusCode: 500, statusMessage: mapError.message })
-  if (!mapRow) throw createError({ statusCode: 404, statusMessage: 'Plato no tiene inventario asociado' })
-
-  const { data: itemRow, error: itemError } = await client
-    .from('inventario_items')
-    .select('*')
-    .eq('id', mapRow.inventario_item_id)
-    .single()
-  if (itemError || !itemRow) throw createError({ statusCode: 404, statusMessage: 'Plato no encontrado' })
-
-  const [dishes, stock] = await Promise.all([
-    getItemDishes(event, mapRow.inventario_item_id),
-    getItemStock(event, mapRow.inventario_item_id, puntoVentaId),
-  ])
-  return { sale: toSaleRecord(saleRow), inventory: toInventoryItem(itemRow, dishes, stock) }
-}
-
-export async function deleteSale(event: H3Event, id: string): Promise<void> {
-  const client = await serverSupabaseClient(event)
-  const { error } = await client.from('ventas').delete().eq('id', id)
-  if (error) {
-    const statusCode = error.code === '42501' ? 403 : 500
-    throw createError({ statusCode, statusMessage: error.message })
-  }
-}
-
 function lastNDates(days: number): string[] {
   const dates: string[] = []
   for (let i = days - 1; i >= 0; i -= 1) {
@@ -400,11 +278,11 @@ function lastNDates(days: number): string[] {
 }
 
 export async function getWeeklySummary(event: H3Event, days = 7, override?: string): Promise<DaySummary[]> {
-  const [sales, movements] = await Promise.all([getSales(event, override), getMovements(event, override)])
+  const [pedidos, movements] = await Promise.all([listPedidos(event, override), getMovements(event, override)])
   const dates = lastNDates(days)
 
   return dates.map((date) => {
-    const daySales = sales.filter((sale) => sale.date === date)
+    const dayPedidos = pedidos.filter((pedido) => pedido.date === date)
     const dayConsumption = movements
       .filter((movement) => movement.date === date && movement.type === 'sale')
       .reduce((sum, movement) => sum + movement.amount, 0)
@@ -412,8 +290,8 @@ export async function getWeeklySummary(event: H3Event, days = 7, override?: stri
     return {
       date,
       label: dayLabel(date),
-      revenueThousands: daySales.reduce((sum, sale) => sum + sale.totalThousands, 0),
-      itemsSold: daySales.reduce((sum, sale) => sum + sale.qty, 0),
+      revenueThousands: dayPedidos.reduce((sum, pedido) => sum + pedido.totalMiles, 0),
+      itemsSold: dayPedidos.reduce((sum, pedido) => sum + pedido.itemsCount, 0),
       unitsConsumed: dayConsumption,
     }
   })

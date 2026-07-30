@@ -45,6 +45,9 @@ export default defineNuxtConfig({
     // Dashboard y API: contenido autenticado y distinto por usuario/rol — nunca
     // se debe cachear, o un vendedor podría terminar viendo la respuesta cacheada
     // de otro.
+    // El comodín ** no cubre /dashboard a secas, y ese índice ya no es estático:
+    // muestra tiles distintos según el rol, así que se marca aparte.
+    '/dashboard': { cache: false },
     '/dashboard/**': { cache: false },
     '/api/**': { cache: false },
   },

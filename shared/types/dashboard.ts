@@ -27,24 +27,11 @@ export interface Movement {
   note?: string
 }
 
-export interface SaleRecord {
-  id: string
-  date: string
-  time: string
-  dishId: string
-  dishName: string
-  qty: number
-  unitPriceThousands: number
-  totalThousands: number
-  /** Nombre de quien registró la venta (snapshot al momento de vender). */
-  vendedorNombre?: string
-}
-
 export interface DaySummary {
   date: string
   label: string
   revenueThousands: number
   itemsSold: number
-  /** Unidades de inventario consumidas ese día (ventas menos reversiones). */
+  /** Unidades de inventario consumidas ese día (pedidos menos reversiones). */
   unitsConsumed: number
 }
