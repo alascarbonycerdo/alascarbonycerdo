@@ -160,7 +160,7 @@ const toggleActivo = async (punto: PuntoVentaSummary) => {
           </div>
 
           <div class="grid grid-cols-2 gap-2">
-            <StatTile label="Ventas de hoy" :value="formatCOP(punto.todayRevenueThousands)" />
+            <StatTile label="Ingresos de hoy" :value="formatCOP(punto.todayRevenueThousands)" />
             <StatTile label="Stock bajo" :value="String(punto.lowStockCount)" :tone="punto.lowStockCount > 0 ? 'ember' : 'gold'" />
           </div>
 

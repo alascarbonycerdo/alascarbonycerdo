@@ -1,6 +1,6 @@
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const id = getRouterParam(event, 'id')!
-  await deleteSale(event, id)
+  await deletePedido(event, id)
   return { ok: true }
 })

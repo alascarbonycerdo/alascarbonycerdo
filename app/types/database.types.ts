@@ -437,56 +437,82 @@ export type Database = {
           },
         ]
       }
-      ventas: {
+      pedidos: {
         Row: {
-          cantidad: number
           created_at: string
-          dish_id: string
-          dish_nombre: string
           id: string
-          precio_unitario_miles: number
           punto_venta_id: string
+          responsable_id: string | null
+          responsable_nombre: string | null
           total_miles: number
-          vendedor_id: string | null
-          vendedor_nombre: string | null
         }
         Insert: {
-          cantidad: number
           created_at?: string
-          dish_id: string
-          dish_nombre: string
           id?: string
-          precio_unitario_miles: number
           punto_venta_id: string
-          total_miles: number
-          vendedor_id?: string | null
-          vendedor_nombre?: string | null
+          responsable_id?: string | null
+          responsable_nombre?: string | null
+          total_miles?: number
         }
         Update: {
-          cantidad?: number
           created_at?: string
-          dish_id?: string
-          dish_nombre?: string
           id?: string
-          precio_unitario_miles?: number
           punto_venta_id?: string
+          responsable_id?: string | null
+          responsable_nombre?: string | null
           total_miles?: number
-          vendedor_id?: string | null
-          vendedor_nombre?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'ventas_vendedor_id_fkey'
-            columns: ['vendedor_id']
+            foreignKeyName: 'pedidos_responsable_id_fkey'
+            columns: ['responsable_id']
             isOneToOne: false
             referencedRelation: 'profiles'
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'ventas_punto_venta_id_fkey'
+            foreignKeyName: 'pedidos_punto_venta_id_fkey'
             columns: ['punto_venta_id']
             isOneToOne: false
             referencedRelation: 'puntos_venta'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      pedido_items: {
+        Row: {
+          cantidad: number
+          dish_id: string
+          dish_nombre: string
+          id: string
+          pedido_id: string
+          precio_unitario_miles: number
+          subtotal_miles: number
+        }
+        Insert: {
+          cantidad: number
+          dish_id: string
+          dish_nombre: string
+          id?: string
+          pedido_id: string
+          precio_unitario_miles: number
+          subtotal_miles: number
+        }
+        Update: {
+          cantidad?: number
+          dish_id?: string
+          dish_nombre?: string
+          id?: string
+          pedido_id?: string
+          precio_unitario_miles?: number
+          subtotal_miles?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'pedido_items_pedido_id_fkey'
+            columns: ['pedido_id']
+            isOneToOne: false
+            referencedRelation: 'pedidos'
             referencedColumns: ['id']
           },
         ]
@@ -499,6 +525,14 @@ export type Database = {
       current_role_is: { Args: { required: string[] }; Returns: boolean }
       restock_item: { Args: { p_item_id: string; p_cantidad: number; p_nota?: string | null }; Returns: undefined }
       remove_stock_item: { Args: { p_item_id: string; p_cantidad: number; p_nota?: string | null }; Returns: undefined }
+      create_pedido: {
+        Args: {
+          p_items: { dish_id: string; dish_nombre: string; cantidad: number; precio_unitario_miles: number }[]
+          p_fecha?: string
+        }
+        Returns: string
+      }
+      delete_pedido: { Args: { p_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

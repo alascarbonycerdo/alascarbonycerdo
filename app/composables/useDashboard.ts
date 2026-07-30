@@ -1,8 +1,9 @@
-import type { DaySummary, InventoryItem, SaleRecord } from '#shared/types/dashboard'
+import type { DaySummary, InventoryItem } from '#shared/types/dashboard'
+import type { Pedido } from '#shared/types/pedido'
 
 export const useDashboard = () => {
   const inventory = useState<InventoryItem[]>('dashboard-inventory', () => [])
-  const todaySales = useState<SaleRecord[]>('dashboard-today-sales', () => [])
+  const todayPedidos = useState<Pedido[]>('dashboard-today-pedidos', () => [])
   const weeklySummary = useState<DaySummary[]>('dashboard-weekly-summary', () => [])
   const pending = useState('dashboard-pending', () => false)
   const error = useState<string | null>('dashboard-error', () => null)
@@ -17,13 +18,13 @@ export const useDashboard = () => {
     pending.value = true
     error.value = null
     try {
-      const [inventoryRes, salesRes, summaryRes] = await Promise.all([
+      const [inventoryRes, pedidosRes, summaryRes] = await Promise.all([
         requestFetch<InventoryItem[]>('/api/dashboard/inventory'),
-        requestFetch<SaleRecord[]>('/api/dashboard/sales', { query: { date: today } }),
+        requestFetch<Pedido[]>('/api/dashboard/pedidos', { query: { date: today } }),
         requestFetch<DaySummary[]>('/api/dashboard/summary', { query: { days: 7 } }),
       ])
       inventory.value = inventoryRes
-      todaySales.value = salesRes
+      todayPedidos.value = pedidosRes
       weeklySummary.value = summaryRes
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'No se pudo cargar el dashboard'
@@ -33,8 +34,8 @@ export const useDashboard = () => {
     return true
   }
 
-  const registerSale = async (dishId: string, qty: number) => {
-    await $fetch('/api/dashboard/sales', { method: 'POST', body: { dishId, qty } })
+  const registerPedido = async (items: { dishId: string; cantidad: number }[]) => {
+    await $fetch('/api/dashboard/pedidos', { method: 'POST', body: { items } })
     await refresh()
   }
 
@@ -63,10 +64,12 @@ export const useDashboard = () => {
   }
 
   const todayRevenueThousands = computed(() =>
-    todaySales.value.reduce((sum, sale) => sum + sale.totalThousands, 0),
+    todayPedidos.value.reduce((sum, pedido) => sum + pedido.totalMiles, 0),
   )
 
-  const todayItemsSold = computed(() => todaySales.value.reduce((sum, sale) => sum + sale.qty, 0))
+  const todayItemsSold = computed(() =>
+    todayPedidos.value.reduce((sum, pedido) => sum + pedido.itemsCount, 0),
+  )
 
   const lowStockCount = computed(
     () =>
@@ -78,13 +81,13 @@ export const useDashboard = () => {
 
   return {
     inventory,
-    todaySales,
+    todayPedidos,
     weeklySummary,
     pending,
     error,
     today,
     refresh,
-    registerSale,
+    registerPedido,
     addStock,
     removeStock,
     updateInventoryConfig,
